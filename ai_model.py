@@ -568,15 +568,15 @@ class HitoriAI:
             return []
         
         try:
-            # Search for knowledge matching keywords
+            # Search for knowledge matching keywords - limit to prevent overly long responses
             knowledge_items = []
-            for keyword in keywords[:3]:  # Limit to top 3 keywords
+            for keyword in keywords[:2]:  # Limit to top 2 keywords
                 items = self.db_session.query(Knowledge).filter(
                     or_(
                         Knowledge.topic.ilike(f'%{keyword}%'),
                         Knowledge.content.ilike(f'%{keyword}%')
                     )
-                ).order_by(Knowledge.confidence_score.desc()).limit(3).all()
+                ).order_by(Knowledge.confidence_score.desc()).limit(2).all()  # Limit to 2 items per keyword
                 
                 knowledge_items.extend([{
                     'topic': item.topic,
@@ -585,7 +585,8 @@ class HitoriAI:
                     'source': item.source
                 } for item in items])
             
-            return knowledge_items
+            # Return only the top 3 most relevant items
+            return sorted(knowledge_items, key=lambda x: x.get('confidence', 0.5), reverse=True)[:3]
             
         except Exception as e:
             logging.error(f"Error retrieving database knowledge: {e}")
@@ -796,20 +797,22 @@ class HitoriAI:
         best_knowledge = max(db_knowledge, key=lambda x: x.get('confidence', 0.5))
         content = self.clean_knowledge_content(best_knowledge['content'])
         
+        # Limit content length to keep responses concise
+        if content and len(content) > 150:
+            content = content[:150] + "..."
+        
         if content:
             if context['is_question']:
                 response_templates = [
-                    f"Based on what I've learned, {content} Is there anything specific about {main_keyword} you'd like to know more about?",
-                    f"From my knowledge, {content} What else would you like to know about {main_keyword}?",
-                    f"I can tell you that {content} Any other questions about {main_keyword}?",
+                    f"Based on what I've learned, {content} What else would you like to know about {main_keyword}?",
+                    f"From my knowledge, {content} Any other questions about {main_keyword}?",
                     f"Here's what I know: {content} What interests you most about {main_keyword}?"
                 ]
             else:
                 response_templates = [
                     f"That's interesting about {main_keyword}! {content} What's your experience with this topic?",
                     f"Ah, {main_keyword}! {content} What do you think about that?",
-                    f"I know a bit about {main_keyword}. {content} How does that relate to your interest?",
-                    f"Regarding {main_keyword}, {content} What's your perspective on this?"
+                    f"I know a bit about {main_keyword}. {content} How does that relate to your interest?"
                 ]
             
             # Select response that's not too similar to recent ones
@@ -1052,44 +1055,23 @@ class HitoriAI:
         content = re.sub(r'<ref.*?</ref>', '', content)  # Remove references
         content = re.sub(r'<.*?>', '', content)    # Remove HTML tags
         
-        # Clean up common Wikipedia artifacts
-        content = content.replace('Written by', 'written by')
-        content = content.replace('Published by', 'published by')
-        content = content.replace('Genre', 'genre:')
-        content = content.replace('Magazine', 'magazine:')
-        content = content.replace('Demographic', 'demographic:')
-        content = content.replace('Original run', 'ran from')
-        content = content.replace('Volumes', 'volumes:')
-        
         # Remove formatting artifacts
         content = re.sub(r'\s+', ' ', content)  # Normalize whitespace
         content = re.sub(r'\n+', ' ', content)  # Replace newlines with spaces
         content = content.strip()
         
-        # Extract meaningful information from the cleaned content
-        if 'written by' in content.lower() or 'published by' in content.lower():
-            # Extract author/publisher info
-            parts = content.split()
-            meaningful_parts = []
-            for i, part in enumerate(parts):
-                if part.lower() in ['written', 'published', 'illustrated'] and i + 2 < len(parts):
-                    if parts[i + 1].lower() == 'by':
-                        meaningful_parts.append(f"{part} by {parts[i + 2]}")
-            
-            if meaningful_parts:
-                return meaningful_parts[0] + '.'
-        
-        # Look for descriptive sentences
+        # Look for the first meaningful sentence
         sentences = [s.strip() for s in content.split('.') if s.strip() and len(s.strip()) > 15 and '|' not in s]
         
         if sentences:
-            # Return the first good sentence
+            # Return the first good sentence, keep it short
             good_sentence = sentences[0].strip()
-            if len(good_sentence) > 200:
-                good_sentence = good_sentence[:200] + '...'
-            return good_sentence + ('.' if not good_sentence.endswith('.') else '')
+            # Limit to 100 characters for conciseness
+            if len(good_sentence) > 100:
+                good_sentence = good_sentence[:100] + "..."
+            return good_sentence + ('.' if not good_sentence.endswith('.') and not good_sentence.endswith('...') else '')
         
-        # Last resort - return a generic response for this topic
+        # If no good sentences found, return empty to use fallback responses
         return ""
     
     def get_knowledge_from_memory(self, keywords):
