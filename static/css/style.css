@@ -1,0 +1,210 @@
+/* Custom styles for Hitori chat application */
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+}
+
+.chat-container {
+    height: calc(100vh - 80px);
+    display: flex;
+    flex-direction: column;
+}
+
+.messages-area {
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    flex: 1;
+    min-height: 0;
+}
+
+.input-area {
+    flex-shrink: 0;
+    background: var(--bs-body-bg);
+}
+
+/* Message Bubbles */
+.message {
+    margin-bottom: 1rem;
+    max-width: 80%;
+}
+
+.message.user {
+    margin-left: auto;
+}
+
+.message.assistant {
+    margin-right: auto;
+}
+
+.message-bubble {
+    padding: 0.75rem 1rem;
+    border-radius: 1rem;
+    word-wrap: break-word;
+    position: relative;
+}
+
+.message.user .message-bubble {
+    background: var(--bs-info);
+    color: white;
+    border-bottom-right-radius: 0.25rem;
+}
+
+.message.assistant .message-bubble {
+    background: var(--bs-secondary);
+    color: var(--bs-body-color);
+    border-bottom-left-radius: 0.25rem;
+}
+
+.message-info {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    margin-top: 0.25rem;
+}
+
+.message.user .message-info {
+    text-align: right;
+}
+
+.message.assistant .message-info {
+    text-align: left;
+}
+
+/* Voice button states */
+.voice-listening {
+    background: var(--bs-danger) !important;
+    border-color: var(--bs-danger) !important;
+    color: white !important;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* Loading overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loading-content {
+    text-align: center;
+    background: var(--bs-body-bg);
+    padding: 2rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--bs-border-color);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .message {
+        max-width: 90%;
+    }
+    
+    .container-fluid {
+        padding: 0;
+    }
+    
+    .chat-container {
+        height: calc(100vh - 70px);
+    }
+    
+    .message-bubble {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Welcome message */
+.welcome-message {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+/* Scrollbar styling for webkit browsers */
+.messages-area::-webkit-scrollbar {
+    width: 6px;
+}
+
+.messages-area::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.messages-area::-webkit-scrollbar-thumb {
+    background: var(--bs-secondary);
+    border-radius: 3px;
+}
+
+.messages-area::-webkit-scrollbar-thumb:hover {
+    background: var(--bs-secondary-dark);
+}
+
+/* Focus states */
+#message-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-info-rgb), 0.25);
+    border-color: var(--bs-info);
+}
+
+/* Button hover effects */
+#voice-btn:hover, #clear-btn:hover, #send-btn:hover {
+    transform: translateY(-1px);
+    transition: transform 0.2s ease;
+}
+
+/* Error message styling */
+.error-message {
+    background: var(--bs-danger);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    margin: 1rem 0;
+    text-align: center;
+}
+
+/* Speaking indicator */
+.speaking-indicator {
+    display: inline-flex;
+    align-items: center;
+    color: var(--bs-success);
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+}
+
+.speaking-indicator i {
+    animation: pulse 1s infinite;
+    margin-right: 0.5rem;
+}
+
+/* Stats info styling */
+.stats-info {
+    background: var(--bs-dark);
+    border: 1px solid var(--bs-warning);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin: 0.5rem 0;
+}
+
+.stats-info h6 {
+    color: var(--bs-warning);
+    margin-bottom: 0.75rem;
+}
+
+.stats-info ul li {
+    padding: 0.25rem 0;
+    color: var(--bs-body-color);
+}
+
+.stats-info ul li strong {
+    color: var(--bs-info);
+}
