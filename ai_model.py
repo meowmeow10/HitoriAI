@@ -1050,35 +1050,42 @@ class HitoriAI:
         content = re.sub(r'\{\{.*?\}\}', '', content)  # Remove templates
         content = re.sub(r'<ref.*?</ref>', '', content)  # Remove references
         content = re.sub(r'<.*?>', '', content)    # Remove HTML tags
+        content = re.sub(r'\[\d+\]', '', content)  # Remove reference numbers like [13]
         
         # Remove formatting artifacts
         content = re.sub(r'\s+', ' ', content)  # Normalize whitespace
         content = re.sub(r'\n+', ' ', content)  # Replace newlines with spaces
         content = content.strip()
         
-        # Look for meaningful sentences
-        sentences = [s.strip() for s in content.split('.') if s.strip() and len(s.strip()) > 15 and '|' not in s]
+        # Look for meaningful sentences - be more careful about sentence boundaries
+        sentences = []
+        for sentence in content.split('.'):
+            sentence = sentence.strip()
+            # Filter out short fragments, table remnants, and reference artifacts
+            if (len(sentence) > 20 and 
+                '|' not in sentence and 
+                not re.match(r'^\d+$', sentence) and  # Skip lone numbers
+                not sentence.startswith('[') and      # Skip reference markers
+                len(sentence.split()) > 3):           # Must have at least 4 words
+                sentences.append(sentence)
         
         if sentences:
-            # Return up to 2 sentences, with a reasonable length limit
+            # Build result with better length management
             result_sentences = []
             total_length = 0
+            max_length = 250  # Reduced to ensure complete sentences
             
-            for sentence in sentences[:3]:  # Check up to 3 sentences
-                sentence = sentence.strip()
-                if total_length + len(sentence) > 300:  # Increased limit to 300 chars
-                    break
-                result_sentences.append(sentence)
-                total_length += len(sentence) + 2  # +2 for '. '
-                
-                # Stop after 2 complete sentences for readability
-                if len(result_sentences) >= 2:
+            for sentence in sentences[:2]:  # Limit to 2 sentences max
+                sentence_with_period = sentence + '.'
+                # Only add if it doesn't exceed our limit
+                if total_length + len(sentence_with_period) + 1 <= max_length:
+                    result_sentences.append(sentence)
+                    total_length += len(sentence_with_period) + 1
+                else:
                     break
             
             if result_sentences:
-                result = '. '.join(result_sentences)
-                if not result.endswith('.'):
-                    result += '.'
+                result = '. '.join(result_sentences) + '.'
                 return result
         
         # If no good sentences found, return empty to use fallback responses
