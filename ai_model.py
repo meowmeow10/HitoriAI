@@ -630,8 +630,25 @@ class HitoriAI:
             if wikipedia_knowledge:
                 db_knowledge = wikipedia_knowledge
         
+        # Add joke telling capability
+        if any(word in message.lower() for word in ['joke', 'funny', 'humor', 'laugh', 'tell me something funny']):
+            return self.tell_joke(keywords, context)
+        
+        # Add code writing capability
+        if any(word in message.lower() for word in ['code', 'program', 'write code', 'programming', 'function', 'script']):
+            return self.help_with_coding(message, keywords, context)
+        
         # Enhanced knowledge base with more varied responses
         topic_responses = {
+            'vr': [
+                "VR headsets are absolutely fascinating! They create immersive virtual worlds by tracking your head movements and displaying stereoscopic images. Modern VR headsets like the Meta Quest, PlayStation VR, and Valve Index offer incredible experiences - from exploring virtual worlds to playing immersive games. What interests you most about VR technology? Are you thinking about getting one, or curious about how they work?",
+                "Virtual Reality is such an exciting field! VR headsets transport you to completely different worlds using advanced display technology, motion tracking, and spatial audio. They're used for gaming, education, training simulations, and even therapy. The technology has come so far - we now have wireless headsets with hand tracking! What aspect of VR fascinates you most?",
+                "VR headsets are incredible pieces of technology! They use multiple sensors, high-resolution displays, and precise tracking to create the illusion that you're somewhere else entirely. From exploring ancient civilizations to practicing surgery, VR opens up amazing possibilities. Have you tried VR before, or are you curious about what it's like?"
+            ],
+            'headset': [
+                "Headsets come in so many varieties! There are VR headsets for virtual reality, gaming headsets for immersive audio, and professional headsets for work calls. Each type is engineered for specific purposes - VR headsets focus on visual immersion and tracking, while gaming headsets prioritize audio quality and comfort for long sessions. What type of headset are you interested in?",
+                "The world of headsets is diverse and exciting! From lightweight wireless earbuds to heavy-duty professional broadcasting headsets, each serves different needs. Gaming headsets often feature surround sound and noise cancellation, while VR headsets include motion sensors and high-resolution displays. Are you looking for recommendations, or curious about how they work?"
+            ],
             'pepsi': [
                 "Pepsi has quite a history! It was created in 1893 by pharmacist Caleb Bradham. Interesting how it became Coca-Cola's main rival.",
                 "The Cola Wars between Pepsi and Coke were fascinating! Remember the Pepsi Challenge campaigns?",
@@ -844,11 +861,11 @@ class HitoriAI:
                     return f"Great question about {main_keyword}! {fact} What else would you like to know about it?"
             
             responses = [
-                f"That's a thoughtful question about {main_keyword}. I'm learning more about this topic all the time. What specific aspects are you curious about?",
-                f"Interesting question! I'd love to explore {main_keyword} with you. What prompted your curiosity about this?",
-                f"Good question about {main_keyword}! I'm always eager to learn alongside you. What do you already know about it?",
-                f"You've got me thinking about {main_keyword}. What would you like to dive into first?",
-                f"That's worth exploring! What angle of {main_keyword} interests you most?"
+                f"That's a fascinating question about {main_keyword}! Let me share what I know and learn from your perspective too. {main_keyword} is a topic with many interesting aspects - from its history and development to its current applications and future potential. What specific aspects are you most curious about? Are you looking to understand how it works, its impact, or perhaps personal experiences with it?",
+                f"Great question about {main_keyword}! I love exploring topics like this because there's always so much depth to discover. Whether we're talking about the technical side, the human stories behind it, or its broader implications, {main_keyword} offers rich discussion material. What prompted your curiosity about this particular topic? I'd love to hear your thoughts and share what I've learned!",
+                f"Excellent question! {main_keyword} is definitely worth diving deep into. I find that the best conversations happen when we can explore topics from multiple angles - the facts, the personal connections, the 'why it matters' aspects. What drew you to ask about {main_keyword}? Do you have any experience with it, or is this completely new territory you're exploring?",
+                f"You've touched on something really interesting with {main_keyword}! I always enjoy when conversations go in unexpected directions like this. There's often more to explore than meets the eye initially. What angle interests you most? Are you thinking about it from a practical standpoint, or are you more curious about the bigger picture and implications?",
+                f"That's a topic worth exploring thoroughly! {main_keyword} is one of those subjects where every question leads to more fascinating discoveries. I find that understanding the 'why' behind things is often as interesting as the 'what' and 'how'. What made you think of {main_keyword}? Let's dive into whatever aspect interests you most!"
             ]
         elif context['sentiment'] == 'positive':
             responses = [
@@ -1170,6 +1187,358 @@ class HitoriAI:
         except Exception as e:
             logging.error(f"Error in Wikipedia search: {e}")
             return None
+    
+    def tell_joke(self, keywords=None, context=None):
+        """Tell jokes based on context or randomly"""
+        tech_jokes = [
+            "Why do programmers prefer dark mode? Because light attracts bugs! 🐛",
+            "How many programmers does it take to change a light bulb? None, that's a hardware problem! 💡",
+            "Why do Java developers wear glasses? Because they can't C#! 👓",
+            "A SQL query goes into a bar, walks up to two tables and asks... 'Can I join you?' 🍺",
+            "Why don't programmers like nature? It has too many bugs! 🌿🐛",
+            "There are only 10 types of people in the world: those who understand binary and those who don't! 😄"
+        ]
+        
+        general_jokes = [
+            "Why don't scientists trust atoms? Because they make up everything! ⚛️",
+            "I told my wife she was drawing her eyebrows too high. She looked surprised! 😮",
+            "Why don't eggs tell jokes? They'd crack each other up! 🥚😂",
+            "What do you call a fake noodle? An impasta! 🍝",
+            "Why did the scarecrow win an award? He was outstanding in his field! 🌾",
+            "What's the best thing about Switzerland? I don't know, but the flag is a big plus! 🇨🇭➕"
+        ]
+        
+        ai_jokes = [
+            "Why did the AI go to therapy? It had too many deep learning issues! 🤖",
+            "What do you call an AI that sings? A neural network! 🎵",
+            "Why don't robots ever panic? They have excellent processing power! 💻",
+            "What's an AI's favorite type of music? Algo-rhythms! 🎶"
+        ]
+        
+        # Select joke category based on keywords
+        if keywords and any(word in ['code', 'program', 'tech', 'computer'] for word in keywords):
+            jokes = tech_jokes
+        elif keywords and any(word in ['ai', 'robot', 'artificial'] for word in keywords):
+            jokes = ai_jokes
+        else:
+            jokes = general_jokes
+        
+        joke = random.choice(jokes)
+        follow_ups = [
+            " Hope that made you smile! Want to hear another one?",
+            " Did that get a chuckle? I've got more where that came from! 😄",
+            " Laughter is the best debugging tool! Want another joke?",
+            " Comedy is all about timing... and good material! What else can I help you with?"
+        ]
+        
+        return joke + random.choice(follow_ups)
+    
+    def help_with_coding(self, message, keywords=None, context=None):
+        """Help with coding questions and requests"""
+        message_lower = message.lower()
+        
+        # Detect programming language
+        languages = {
+            'python': ['python', 'py', 'django', 'flask'],
+            'javascript': ['javascript', 'js', 'node', 'react', 'vue'],
+            'java': ['java'],
+            'c++': ['c++', 'cpp'],
+            'html': ['html', 'web'],
+            'css': ['css', 'style'],
+            'sql': ['sql', 'database']
+        }
+        
+        detected_lang = None
+        for lang, terms in languages.items():
+            if any(term in message_lower for term in terms):
+                detected_lang = lang
+                break
+        
+        # Generate code examples based on request
+        if 'function' in message_lower or 'def' in message_lower:
+            return self.generate_function_example(detected_lang, keywords)
+        elif 'loop' in message_lower:
+            return self.generate_loop_example(detected_lang)
+        elif 'class' in message_lower:
+            return self.generate_class_example(detected_lang)
+        elif 'hello world' in message_lower:
+            return self.generate_hello_world(detected_lang)
+        else:
+            return self.generate_general_coding_help(detected_lang, message, keywords)
+    
+    def generate_function_example(self, language, keywords=None):
+        """Generate function examples"""
+        if language == 'python':
+            return """Here's a Python function example:
+
+```python
+def calculate_factorial(n):
+    \"\"\"Calculate factorial of a number\"\"\"
+    if n <= 1:
+        return 1
+    return n * calculate_factorial(n - 1)
+
+# Usage
+result = calculate_factorial(5)
+print(f"5! = {result}")  # Output: 5! = 120
+```
+
+This function uses recursion to calculate factorials. Want to see examples in other languages or different types of functions?"""
+        
+        elif language == 'javascript':
+            return """Here's a JavaScript function example:
+
+```javascript
+function greetUser(name, time = 'day') {
+    return `Hello ${name}, have a great ${time}!`;
+}
+
+// Usage
+console.log(greetUser('Alice'));         // "Hello Alice, have a great day!"
+console.log(greetUser('Bob', 'evening')); // "Hello Bob, have a great evening!"
+```
+
+This shows function parameters with default values. Need help with arrow functions or async functions?"""
+        
+        else:
+            return "I can help you write functions! Which programming language are you working with? I can provide examples in Python, JavaScript, Java, C++, and more. What specific type of function do you need help with?"
+    
+    def generate_loop_example(self, language):
+        """Generate loop examples"""
+        if language == 'python':
+            return """Here are Python loop examples:
+
+```python
+# For loop with range
+for i in range(5):
+    print(f"Count: {i}")
+
+# For loop with list
+fruits = ['apple', 'banana', 'orange']
+for fruit in fruits:
+    print(f"I like {fruit}")
+
+# While loop
+count = 0
+while count < 3:
+    print(f"While loop: {count}")
+    count += 1
+
+# List comprehension (Pythonic way)
+squares = [x**2 for x in range(5)]
+print(squares)  # [0, 1, 4, 9, 16]
+```
+
+Python loops are very readable and powerful! Need help with specific loop scenarios?"""
+        
+        elif language == 'javascript':
+            return """Here are JavaScript loop examples:
+
+```javascript
+// For loop
+for (let i = 0; i < 5; i++) {
+    console.log(`Count: ${i}`);
+}
+
+// For...of loop (arrays)
+const fruits = ['apple', 'banana', 'orange'];
+for (const fruit of fruits) {
+    console.log(`I like ${fruit}`);
+}
+
+// For...in loop (objects)
+const person = {name: 'Alice', age: 30, city: 'New York'};
+for (const key in person) {
+    console.log(`${key}: ${person[key]}`);
+}
+
+// Array methods (functional approach)
+const numbers = [1, 2, 3, 4, 5];
+numbers.forEach(num => console.log(num * 2));
+```
+
+JavaScript offers many ways to iterate! Want to learn about map, filter, or reduce?"""
+        
+        else:
+            return "I can show you loop examples! Which programming language are you using? I have examples for Python, JavaScript, Java, C++, and more. What type of loop are you trying to create?"
+    
+    def generate_class_example(self, language):
+        """Generate class examples"""
+        if language == 'python':
+            return """Here's a Python class example:
+
+```python
+class Dog:
+    def __init__(self, name, breed, age):
+        self.name = name
+        self.breed = breed
+        self.age = age
+        self.energy = 100
+    
+    def bark(self):
+        print(f"{self.name} says Woof!")
+        return "Woof!"
+    
+    def play(self):
+        if self.energy > 20:
+            self.energy -= 20
+            print(f"{self.name} is playing! Energy: {self.energy}")
+        else:
+            print(f"{self.name} is too tired to play.")
+    
+    def __str__(self):
+        return f"{self.name} is a {self.age}-year-old {self.breed}"
+
+# Usage
+my_dog = Dog("Buddy", "Golden Retriever", 3)
+print(my_dog)  # "Buddy is a 3-year-old Golden Retriever"
+my_dog.bark()  # "Buddy says Woof!"
+my_dog.play()  # "Buddy is playing! Energy: 80"
+```
+
+This shows constructor, methods, and string representation. Want to learn about inheritance or properties?"""
+        
+        elif language == 'javascript':
+            return """Here's a JavaScript class example:
+
+```javascript
+class Car {
+    constructor(make, model, year) {
+        this.make = make;
+        this.model = model;
+        this.year = year;
+        this.mileage = 0;
+    }
+    
+    start() {
+        console.log(`${this.make} ${this.model} is starting...`);
+        return 'Engine started!';
+    }
+    
+    drive(miles) {
+        this.mileage += miles;
+        console.log(`Drove ${miles} miles. Total: ${this.mileage}`);
+    }
+    
+    getInfo() {
+        return `${this.year} ${this.make} ${this.model} - ${this.mileage} miles`;
+    }
+}
+
+// Usage
+const myCar = new Car('Toyota', 'Camry', 2022);
+console.log(myCar.getInfo()); // "2022 Toyota Camry - 0 miles"
+myCar.start();                // "Toyota Camry is starting..."
+myCar.drive(150);             // "Drove 150 miles. Total: 150"
+```
+
+This shows ES6 class syntax with constructor and methods. Need help with inheritance or static methods?"""
+        
+        else:
+            return "I can help you create classes! Which programming language are you working with? I can show examples in Python, JavaScript, Java, C++, and more. What kind of class are you trying to build?"
+    
+    def generate_hello_world(self, language):
+        """Generate Hello World examples"""
+        examples = {
+            'python': '''```python
+print("Hello, World!")
+
+# Or with a function
+def greet():
+    return "Hello, World!"
+
+print(greet())
+```''',
+            'javascript': '''```javascript
+console.log("Hello, World!");
+
+// Or with a function
+function greet() {
+    return "Hello, World!";
+}
+
+console.log(greet());
+
+// Or as an arrow function
+const greet = () => "Hello, World!";
+console.log(greet());
+```''',
+            'java': '''```java
+public class HelloWorld {
+    public static void main(String[] args) {
+        System.out.println("Hello, World!");
+    }
+}
+```''',
+            'c++': '''```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    cout << "Hello, World!" << endl;
+    return 0;
+}
+```''',
+            'html': '''```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hello World</title>
+</head>
+<body>
+    <h1>Hello, World!</h1>
+</body>
+</html>
+```'''
+        }
+        
+        if language and language in examples:
+            return f"Here's Hello World in {language.title()}:\n\n{examples[language]}\n\nThis is the classic first program! Want to see it in other languages or learn what comes next?"
+        else:
+            return """Here's Hello World in several popular languages:
+
+**Python:**
+```python
+print("Hello, World!")
+```
+
+**JavaScript:**
+```javascript
+console.log("Hello, World!");
+```
+
+**Java:**
+```java
+public class HelloWorld {
+    public static void main(String[] args) {
+        System.out.println("Hello, World!");
+    }
+}
+```
+
+Which language interests you most? I can provide more detailed examples and explain what each part does!"""
+    
+    def generate_general_coding_help(self, language, message, keywords):
+        """Generate general coding help"""
+        help_topics = [
+            "I'd love to help you with coding! Here are some things I can assist with:",
+            "",
+            "🔧 **Code Examples**: Functions, loops, classes, data structures",
+            "🐛 **Debugging Tips**: Common errors and how to fix them", 
+            "📚 **Best Practices**: Clean code, naming conventions, comments",
+            "🎯 **Specific Problems**: Algorithm help, logic assistance",
+            "💡 **Learning Path**: What to learn next in your coding journey",
+            "",
+            "What specific coding challenge are you working on? I can provide:",
+            "• Step-by-step explanations",
+            "• Working code examples", 
+            "• Alternative approaches",
+            "• Debugging strategies",
+            "",
+            "Just describe what you're trying to build or the problem you're solving!"
+        ]
+        
+        return "\n".join(help_topics)
     
     def store_learned_knowledge(self, topic, content, confidence, source):
         """Store newly learned knowledge in the knowledge base"""
