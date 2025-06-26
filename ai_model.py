@@ -26,7 +26,12 @@ class HitoriAI:
         
         if self.database_url:
             try:
-                self.engine = create_engine(self.database_url)
+                self.engine = create_engine(
+                    self.database_url,
+                    pool_recycle=300,
+                    pool_pre_ping=True,
+                    connect_args={"sslmode": "prefer"}
+                )
                 Base.metadata.create_all(self.engine)
                 self.Session = sessionmaker(bind=self.engine)
                 self.db_session = self.Session()
@@ -34,6 +39,8 @@ class HitoriAI:
                 logging.info("Database connection established")
             except Exception as e:
                 logging.error(f"Database connection failed: {e}")
+                self.db_session = None
+                self.web_scraper = None
         
         # Fallback to file-based storage
         self.knowledge_file = knowledge_file
@@ -207,14 +214,20 @@ class HitoriAI:
             'did', 'doing', 'a', 'an', 'the', 'and', 'but', 'if', 'or', 'because', 'as', 'until',
             'while', 'of', 'at', 'by', 'for', 'with', 'through', 'during', 'before', 'after',
             'above', 'below', 'up', 'down', 'in', 'out', 'on', 'off', 'over', 'under', 'again',
-            'further', 'then', 'once'
+            'further', 'then', 'once', 'know', 'tell', 'about'
         }
+        
+        # First look for special patterns (names with special characters, etc.)
+        special_keywords = re.findall(r'\b[A-Za-z]+[!-][A-Za-z]*\b|\b[A-Z][a-z]*-[A-Z][a-z]*\b', message)
         
         # Extract words and filter out stop words
         words = re.findall(r'\b[a-zA-Z]+\b', message.lower())
         keywords = [word for word in words if word not in stop_words and len(word) > 2]
         
-        return keywords
+        # Add special keywords back
+        keywords.extend([kw.lower() for kw in special_keywords])
+        
+        return list(set(keywords))  # Remove duplicates
     
     def find_pattern_match(self, message):
         """Find if message matches any known patterns"""
@@ -348,41 +361,54 @@ class HitoriAI:
     
     def train_from_web(self, topics=None, max_sources=5):
         """Train AI by scraping web sources for knowledge"""
-        if not self.web_scraper:
-            return {"error": "Web scraping not available - database not connected"}
-        
         try:
+            # Create a simple web scraper even without database
+            if not self.web_scraper:
+                from web_scraper import WebKnowledgeScraper
+                simple_scraper = WebKnowledgeScraper(None)
+            else:
+                simple_scraper = self.web_scraper
+            
             # Get URLs based on topics
             if topics:
-                urls = self.web_scraper.get_topic_suggestions(topics)
+                # Create specific Wikipedia URLs for the topics
+                urls = []
+                for topic in topics:
+                    clean_topic = topic.replace(' ', '_').replace('!', '%21')
+                    urls.append(f'https://en.wikipedia.org/wiki/{clean_topic}')
+                urls.extend(simple_scraper.get_topic_suggestions(topics)[:2])
             else:
-                urls = self.web_scraper.default_sources
+                urls = simple_scraper.default_sources
             
             # Scrape web sources
-            results = self.web_scraper.scrape_multiple_sources(urls, max_sources)
+            results = simple_scraper.scrape_multiple_sources(urls, max_sources)
             
-            # Store knowledge in database
+            # Store knowledge - try database first, fallback to memory
             knowledge_added = 0
-            for topic, knowledge_items in results['knowledge_by_topic'].items():
-                for item in knowledge_items:
-                    # Check if knowledge already exists
-                    existing = self.db_session.query(Knowledge).filter_by(
-                        topic=item['topic'], 
-                        content=item['content']
-                    ).first()
+            if self.db_session:
+                try:
+                    for topic, knowledge_items in results['knowledge_by_topic'].items():
+                        for item in knowledge_items:
+                            # Store in database
+                            knowledge = Knowledge(
+                                topic=item['topic'],
+                                content=item['content'],
+                                source=item['source'],
+                                confidence_score=item['confidence_score'],
+                                is_verified=False
+                            )
+                            self.db_session.add(knowledge)
+                            knowledge_added += 1
                     
-                    if not existing:
-                        knowledge = Knowledge(
-                            topic=item['topic'],
-                            content=item['content'],
-                            source=item['source'],
-                            confidence_score=item['confidence_score'],
-                            is_verified=False
-                        )
-                        self.db_session.add(knowledge)
-                        knowledge_added += 1
-            
-            self.db_session.commit()
+                    self.db_session.commit()
+                except Exception as db_error:
+                    logging.warning(f"Database storage failed, using memory: {db_error}")
+                    self.db_session.rollback()
+                    # Fall back to memory storage
+                    knowledge_added = self.store_knowledge_in_memory(results['knowledge_by_topic'])
+            else:
+                # Store in memory/file system
+                knowledge_added = self.store_knowledge_in_memory(results['knowledge_by_topic'])
             
             return {
                 "success": True,
@@ -395,6 +421,33 @@ class HitoriAI:
         except Exception as e:
             logging.error(f"Error in web training: {e}")
             return {"error": str(e)}
+    
+    def store_knowledge_in_memory(self, knowledge_by_topic):
+        """Store knowledge in the file-based knowledge base as fallback"""
+        knowledge_added = 0
+        
+        for topic, knowledge_items in knowledge_by_topic.items():
+            for item in knowledge_items:
+                # Add to topic knowledge
+                if item['topic'] not in self.knowledge_base["topic_knowledge"]:
+                    self.knowledge_base["topic_knowledge"][item['topic']] = {
+                        "mentions": 1,
+                        "contexts": [],
+                        "facts": [item['content']],
+                        "confidence": item['confidence_score'],
+                        "source": item['source']
+                    }
+                else:
+                    # Add fact if not already present
+                    if item['content'] not in self.knowledge_base["topic_knowledge"][item['topic']]["facts"]:
+                        self.knowledge_base["topic_knowledge"][item['topic']]["facts"].append(item['content'])
+                        knowledge_added += 1
+                
+                knowledge_added += 1
+        
+        # Save to file
+        self.save_knowledge()
+        return knowledge_added
     
     def get_knowledge_from_database(self, keywords):
         """Retrieve relevant knowledge from database"""
@@ -443,16 +496,20 @@ class HitoriAI:
             logging.error(f"Error storing conversation: {e}")
     
     def generate_enhanced_response(self, message, keywords):
-        """Generate response using database knowledge"""
-        # Get relevant knowledge from database
+        """Generate response using database knowledge or file-based knowledge"""
+        # Try database first
         db_knowledge = self.get_knowledge_from_database(keywords)
         
+        # If no database knowledge, check file-based knowledge
+        if not db_knowledge:
+            db_knowledge = self.get_knowledge_from_memory(keywords)
+        
         if db_knowledge:
-            # Use database knowledge to enhance response
+            # Use knowledge to enhance response
             main_keyword = keywords[0] if keywords else "that topic"
             
             # Select best knowledge item
-            best_knowledge = max(db_knowledge, key=lambda x: x['confidence'])
+            best_knowledge = max(db_knowledge, key=lambda x: x.get('confidence', 0.5))
             
             responses = [
                 f"I know about {main_keyword}! {best_knowledge['content']} What would you like to know more about?",
@@ -465,6 +522,31 @@ class HitoriAI:
         
         # Fallback to original response generation
         return self.generate_response(message, keywords)
+    
+    def get_knowledge_from_memory(self, keywords):
+        """Get knowledge from file-based storage"""
+        knowledge_items = []
+        
+        for keyword in keywords[:3]:
+            keyword_lower = keyword.lower().replace('-', '').replace('!', '')
+            
+            for topic, topic_data in self.knowledge_base["topic_knowledge"].items():
+                topic_clean = topic.lower().replace('-', '').replace('!', '')
+                
+                # Match topic or facts
+                if (keyword_lower in topic_clean or 
+                    topic_clean in keyword_lower or
+                    any(keyword_lower in fact.lower() for fact in topic_data.get("facts", []))):
+                    
+                    for fact in topic_data.get("facts", []):
+                        knowledge_items.append({
+                            'topic': topic,
+                            'content': fact,
+                            'confidence': topic_data.get('confidence', 0.5),
+                            'source': topic_data.get('source', 'learned')
+                        })
+        
+        return knowledge_items
     
     def reset_knowledge(self):
         """Reset knowledge base (for testing or fresh start)"""

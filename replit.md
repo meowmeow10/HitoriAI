@@ -107,6 +107,10 @@ Changelog:
 - June 26, 2025: Replaced OpenAI with custom self-trained AI model
 - June 26, 2025: Added AI learning statistics and knowledge persistence
 - June 26, 2025: Completed functional testing - user confirmed working
+- June 26, 2025: Added PostgreSQL database and web scraping capabilities for rapid learning
+- June 26, 2025: Enhanced knowledge extraction for specific topics like anime/entertainment
+- June 26, 2025: Implemented fallback training system that works with or without database
+- June 26, 2025: Successfully tested with K-On! topic - AI now learns and responds with factual information
 ```
 
 ## User Preferences
