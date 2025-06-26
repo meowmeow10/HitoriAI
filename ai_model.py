@@ -348,17 +348,83 @@ class HitoriAI:
         if len(user_message) > 10:  # Only learn from substantial messages
             self.add_learned_pattern(user_message, ai_response)
     
+    def learn_conversation_patterns(self, user_message, ai_response, keywords):
+        """Learn conversation patterns for better responses"""
+        if "conversation_patterns" not in self.knowledge_base:
+            self.knowledge_base["conversation_patterns"] = {}
+        
+        # Learn question patterns
+        if '?' in user_message:
+            pattern_type = "questions"
+            if pattern_type not in self.knowledge_base["conversation_patterns"]:
+                self.knowledge_base["conversation_patterns"][pattern_type] = {}
+            
+            for keyword in keywords:
+                if keyword not in self.knowledge_base["conversation_patterns"][pattern_type]:
+                    self.knowledge_base["conversation_patterns"][pattern_type][keyword] = []
+                self.knowledge_base["conversation_patterns"][pattern_type][keyword].append({
+                    "question": user_message,
+                    "response": ai_response,
+                    "timestamp": datetime.now().isoformat()
+                })
+        
+        # Learn enthusiasm patterns
+        if any(word in user_message.lower() for word in ['awesome', 'amazing', 'love', 'great', '!']):
+            pattern_type = "enthusiasm"
+            if pattern_type not in self.knowledge_base["conversation_patterns"]:
+                self.knowledge_base["conversation_patterns"][pattern_type] = {}
+            
+            for keyword in keywords:
+                if keyword not in self.knowledge_base["conversation_patterns"][pattern_type]:
+                    self.knowledge_base["conversation_patterns"][pattern_type][keyword] = []
+                self.knowledge_base["conversation_patterns"][pattern_type][keyword].append({
+                    "message": user_message,
+                    "response": ai_response,
+                    "timestamp": datetime.now().isoformat()
+                })
+    
     def add_learned_pattern(self, user_message, ai_response):
-        """Add new learned patterns"""
-        # Simple pattern learning - if user says something multiple times, learn it
-        pattern_key = user_message[:20]  # Use first 20 chars as pattern key
+        """Enhanced pattern learning with context awareness"""
+        # Extract intent from message
+        intent = self.extract_message_intent(user_message)
+        
+        # Create pattern key based on intent and message structure
+        pattern_key = f"{intent}:{user_message[:30]}"
         
         if pattern_key not in self.knowledge_base["learned_responses"]:
-            self.knowledge_base["learned_responses"][pattern_key] = []
+            self.knowledge_base["learned_responses"][pattern_key] = {
+                "responses": [],
+                "success_count": 0,
+                "total_uses": 0,
+                "intent": intent
+            }
         
         # Don't duplicate responses
-        if ai_response not in self.knowledge_base["learned_responses"][pattern_key]:
-            self.knowledge_base["learned_responses"][pattern_key].append(ai_response)
+        pattern_data = self.knowledge_base["learned_responses"][pattern_key]
+        if ai_response not in pattern_data["responses"]:
+            pattern_data["responses"].append(ai_response)
+            pattern_data["total_uses"] += 1
+    
+    def extract_message_intent(self, message):
+        """Extract the intent from a user message"""
+        message_lower = message.lower()
+        
+        if '?' in message or any(word in message_lower for word in ['what', 'how', 'why', 'when', 'where', 'who']):
+            return "question"
+        elif any(word in message_lower for word in ['hello', 'hi', 'hey', 'good morning']):
+            return "greeting"
+        elif any(word in message_lower for word in ['bye', 'goodbye', 'see you']):
+            return "farewell"
+        elif any(word in message_lower for word in ['thank', 'thanks', 'appreciate']):
+            return "gratitude"
+        elif any(word in message_lower for word in ['help', 'assist', 'support']):
+            return "help_request"
+        elif any(word in message_lower for word in ['tell me', 'explain', 'describe']):
+            return "information_request"
+        elif '!' in message or any(word in message_lower for word in ['awesome', 'amazing', 'love', 'excited']):
+            return "enthusiasm"
+        else:
+            return "general"
     
     def get_conversation_stats(self):
         """Get statistics about conversations"""
@@ -524,7 +590,10 @@ class HitoriAI:
             logging.error(f"Error storing conversation: {e}")
     
     def generate_enhanced_response(self, message, keywords):
-        """Generate response using database knowledge or file-based knowledge"""
+        """Generate response using advanced context understanding and knowledge"""
+        # Analyze conversation context
+        context = self.analyze_conversation_context(message, keywords)
+        
         # Try database first
         db_knowledge = self.get_knowledge_from_database(keywords)
         
@@ -532,45 +601,270 @@ class HitoriAI:
         if not db_knowledge:
             db_knowledge = self.get_knowledge_from_memory(keywords)
         
-        if db_knowledge and keywords:
+        # Enhanced knowledge base with more topics
+        topic_responses = {
+            'k-on': "K-On! is a popular slice-of-life anime about high school girls in a light music club. The series follows Yui, Mio, Ritsu, Tsumugi, and later Azusa as they make music and memories together.",
+            'bocchi': "Bocchi the Rock! is an anime about Hitori Gotoh, a shy girl who plays guitar and dreams of being in a band. It's praised for its realistic portrayal of social anxiety and amazing music.",
+            'anime': "Anime is Japanese animation that spans countless genres - from action-packed shonen to heartwarming slice-of-life stories. Each season brings new shows that capture different aspects of human experience.",
+            'manga': "Manga are Japanese comics read from right to left. They're the source material for many anime and cover every genre imaginable, often with deeper storytelling than their animated adaptations.",
+            'music': "Music is a universal language that connects people across cultures. Whether it's classical, rock, pop, or any other genre, music has the power to evoke emotions and create lasting memories.",
+            'technology': "Technology continues to evolve rapidly, from AI and machine learning to quantum computing and space exploration. It's fascinating how it shapes our daily lives and future possibilities.",
+            'programming': "Programming is like solving puzzles with code. Each language has its own personality - Python's simplicity, JavaScript's versatility, or C++'s power. It's creative problem-solving at its finest.",
+            'art': "Art comes in so many forms - traditional painting, digital art, sculpture, photography. It's humanity's way of expressing emotions, ideas, and beauty that words sometimes can't capture.",
+            'books': "Books are portals to different worlds and perspectives. Whether fiction or non-fiction, they expand our understanding and imagination in ways that other media simply can't match.",
+            'games': "Gaming has evolved into an art form that combines storytelling, music, visuals, and interactivity. From indie gems to AAA blockbusters, games offer unique experiences.",
+            'science': "Science helps us understand our universe, from the tiniest quantum particles to massive galaxies. Every discovery opens new questions and possibilities."
+        }
+        
+        if keywords:
             main_keyword = keywords[0] if keywords else "that topic"
             
-            # Check if we have knowledge about this topic
-            topic_responses = {
-                'k-on': "K-On! is a popular anime and manga series about high school girls in a light music club. It's known for its cute characters and music themes.",
-                'bocchi': "Bocchi the Rock! is an anime and manga about a shy girl who plays guitar and joins a band. It's popular for its relatable characters and music.",
-                'anime': "Anime is a style of animation that originated in Japan. It covers many genres and has become popular worldwide.",
-                'manga': "Manga are Japanese comics and graphic novels. They're read from right to left and cover many different genres and topics."
+            # Smart keyword matching with context
+            matched_topic = self.find_best_topic_match(keywords, topic_responses, context)
+            
+            if matched_topic:
+                description = topic_responses[matched_topic]
+                return self.generate_contextual_topic_response(matched_topic, description, context, message)
+            
+            # Use database knowledge if available
+            if db_knowledge:
+                return self.generate_knowledge_based_response(db_knowledge, keywords, context)
+            
+            # Generate intelligent response based on context and keywords
+            return self.generate_intelligent_keyword_response(keywords, context, message)
+        
+        # Analyze message sentiment and respond appropriately
+        return self.generate_sentiment_based_response(message, context)
+    
+    def analyze_conversation_context(self, message, keywords):
+        """Analyze conversation context for better responses"""
+        context = {
+            'is_question': '?' in message or any(word in message.lower() for word in ['what', 'how', 'why', 'when', 'where', 'who']),
+            'is_greeting': any(word in message.lower() for word in ['hello', 'hi', 'hey', 'good morning', 'good afternoon']),
+            'is_farewell': any(word in message.lower() for word in ['bye', 'goodbye', 'see you', 'later']),
+            'sentiment': self.analyze_sentiment(message),
+            'recent_topics': self.context_keywords[-5:] if len(self.context_keywords) >= 5 else self.context_keywords,
+            'message_length': len(message.split()),
+            'has_enthusiasm': '!' in message or any(word in message.lower() for word in ['awesome', 'amazing', 'great', 'love', 'excited']),
+            'is_request': any(word in message.lower() for word in ['can you', 'could you', 'please', 'help me', 'tell me'])
+        }
+        return context
+    
+    def analyze_sentiment(self, message):
+        """Simple sentiment analysis"""
+        positive_words = ['good', 'great', 'awesome', 'amazing', 'love', 'like', 'happy', 'excited', 'wonderful', 'fantastic']
+        negative_words = ['bad', 'terrible', 'awful', 'hate', 'dislike', 'sad', 'angry', 'frustrated', 'disappointed']
+        
+        message_lower = message.lower()
+        positive_count = sum(1 for word in positive_words if word in message_lower)
+        negative_count = sum(1 for word in negative_words if word in message_lower)
+        
+        if positive_count > negative_count:
+            return 'positive'
+        elif negative_count > positive_count:
+            return 'negative'
+        else:
+            return 'neutral'
+    
+    def find_best_topic_match(self, keywords, topic_responses, context):
+        """Find the best matching topic using fuzzy matching"""
+        for keyword in keywords:
+            keyword_clean = keyword.lower().replace('!', '').replace('-', '').replace(' ', '')
+            
+            # Direct matches
+            for topic_key in topic_responses.keys():
+                topic_clean = topic_key.replace('-', '').replace('!', '')
+                if (keyword_clean in topic_clean or topic_clean in keyword_clean or
+                    keyword.lower() == topic_key or
+                    any(word in topic_key for word in keyword.split())):
+                    return topic_key
+            
+            # Fuzzy matches for related terms
+            related_terms = {
+                'guitar': 'bocchi',
+                'band': 'bocchi',
+                'shy': 'bocchi',
+                'club': 'k-on',
+                'tea': 'k-on',
+                'code': 'programming',
+                'python': 'programming',
+                'javascript': 'programming',
+                'novel': 'books',
+                'story': 'books',
+                'gaming': 'games',
+                'video': 'games',
+                'physics': 'science',
+                'chemistry': 'science',
+                'biology': 'science'
             }
             
-            # Check for topic matches - be more flexible with matching
-            main_keyword_clean = main_keyword.lower().replace('!', '').replace('-', '').replace(' ', '')
-            main_keyword_original = main_keyword.lower()
-            
-            for topic_key, description in topic_responses.items():
-                # Check multiple variations of matching
-                if (topic_key in main_keyword_clean or main_keyword_clean in topic_key or 
-                    topic_key in main_keyword_original or main_keyword_original in topic_key or
-                    topic_key.replace('-', '') in main_keyword_clean):
-                    responses = [
-                        f"{description} What would you like to know more about?",
-                        f"I know about {main_keyword}! {description}",
-                        f"{description} Are you interested in this topic?",
-                        f"About {main_keyword} - {description}"
-                    ]
-                    return random.choice(responses)
-            
-            # Generic response for topics we have data about but no specific description
-            responses = [
-                f"I've been learning about {main_keyword}. What would you like to know about it?",
-                f"That's an interesting topic - {main_keyword}. What specific aspect interests you?",
-                f"I know a bit about {main_keyword}. What would you like to discuss about it?",
-                f"{main_keyword} is something I've come across in my learning. What draws your interest to it?"
-            ]
-            return random.choice(responses)
+            for term, topic in related_terms.items():
+                if term in keyword_clean and topic in topic_responses:
+                    return topic
         
-        # Fallback to original response generation
-        return self.generate_response(message, keywords)
+        return None
+    
+    def generate_contextual_topic_response(self, topic, description, context, original_message):
+        """Generate contextual response about a specific topic"""
+        if context['is_question']:
+            starters = [
+                f"Great question about {topic}! {description}",
+                f"I'd love to tell you about {topic}. {description}",
+                f"Ah, {topic}! {description}"
+            ]
+        elif context['has_enthusiasm']:
+            starters = [
+                f"I can tell you're excited about {topic}! {description}",
+                f"Yes! {topic} is amazing. {description}",
+                f"I love your enthusiasm for {topic}! {description}"
+            ]
+        else:
+            starters = [
+                f"About {topic} - {description}",
+                f"I know about {topic}! {description}",
+                f"{description}"
+            ]
+        
+        response = random.choice(starters)
+        
+        # Add contextual follow-up
+        if context['is_question']:
+            follow_ups = [
+                " What specific aspect interests you most?",
+                " Is there anything particular you'd like to know?",
+                " What got you interested in this topic?"
+            ]
+        elif context['is_request']:
+            follow_ups = [
+                " I'd be happy to discuss this further with you.",
+                " What would you like to explore about this?",
+                " Feel free to ask me anything about it!"
+            ]
+        else:
+            follow_ups = [
+                " What are your thoughts on this?",
+                " Have you had any experience with this?",
+                " What draws you to this topic?"
+            ]
+        
+        response += random.choice(follow_ups)
+        return response
+    
+    def generate_knowledge_based_response(self, db_knowledge, keywords, context):
+        """Generate response using database knowledge with context"""
+        main_keyword = keywords[0] if keywords else "that"
+        
+        # Use the most relevant knowledge
+        best_knowledge = max(db_knowledge, key=lambda x: x.get('confidence', 0.5))
+        content = self.clean_knowledge_content(best_knowledge['content'])
+        
+        if content:
+            if context['is_question']:
+                return f"Based on what I've learned, {content} Is there anything specific about {main_keyword} you'd like to know more about?"
+            else:
+                return f"That's interesting about {main_keyword}! {content} What's your experience with this topic?"
+        else:
+            return self.generate_intelligent_keyword_response(keywords, context, "")
+    
+    def generate_intelligent_keyword_response(self, keywords, context, original_message):
+        """Generate intelligent response based on keywords and context"""
+        main_keyword = keywords[0] if keywords else "that topic"
+        
+        if context['is_question']:
+            responses = [
+                f"That's a thoughtful question about {main_keyword}. While I'm still learning about this topic, I'd love to explore it with you. What specific aspects are you curious about?",
+                f"Great question! {main_keyword} is something I find intriguing. What prompted your interest in this?",
+                f"I appreciate you asking about {main_keyword}. Though I'm still gathering knowledge on this, I'm curious about your perspective. What do you already know about it?"
+            ]
+        elif context['sentiment'] == 'positive':
+            responses = [
+                f"I can sense your enthusiasm about {main_keyword}! It's wonderful when something captures our interest. What excites you most about it?",
+                f"Your positive energy about {main_keyword} is contagious! I'd love to learn more about why this topic resonates with you.",
+                f"It's great to hear you're interested in {main_keyword}! I'm always eager to learn from people's passions. What got you started with this?"
+            ]
+        elif context['sentiment'] == 'negative':
+            responses = [
+                f"I understand you might have some concerns about {main_keyword}. Sometimes it helps to talk through what's bothering us. What's your experience been like?",
+                f"It sounds like {main_keyword} might be frustrating for you. I'm here to listen and maybe we can work through it together. What's been challenging?",
+                f"I hear that {main_keyword} isn't sitting well with you. Would you like to share what's been difficult about it?"
+            ]
+        else:
+            responses = [
+                f"I find {main_keyword} to be a fascinating topic. There's always so much to discover and discuss. What draws your attention to it?",
+                f"That's an interesting subject - {main_keyword}. I'm curious about your thoughts and experiences with it. What would you like to explore?",
+                f"I'm intrigued by your mention of {main_keyword}. Everyone has unique perspectives on different topics. What's your take on this?"
+            ]
+        
+        return random.choice(responses)
+    
+    def generate_sentiment_based_response(self, message, context):
+        """Generate response based on message sentiment when no keywords are found"""
+        if context['is_greeting']:
+            return random.choice([
+                "Hello! I'm excited to chat with you today. What's on your mind?",
+                "Hi there! I'm feeling quite curious today. What would you like to explore together?",
+                "Hey! Great to see you. I've been learning so much lately and I'm eager to share. What interests you?"
+            ])
+        elif context['is_farewell']:
+            return random.choice([
+                "It was wonderful chatting with you! I always learn something new from our conversations. See you soon!",
+                "Take care! I really enjoyed our discussion. Until next time!",
+                "Goodbye! Thanks for the engaging conversation. I'll be here whenever you want to chat again."
+            ])
+        elif context['sentiment'] == 'positive':
+            return random.choice([
+                "I love your positive energy! It's contagious and makes our conversation so much more enjoyable. What's bringing you joy today?",
+                "Your enthusiasm is wonderful! It reminds me why I enjoy learning and growing through our chats. What's got you excited?",
+                "That positive vibe is amazing! I find that good energy leads to the best conversations. What's on your mind?"
+            ])
+        elif context['sentiment'] == 'negative':
+            return random.choice([
+                "I can sense you might be going through something difficult. Sometimes talking helps. I'm here to listen if you'd like to share.",
+                "It sounds like things might be challenging right now. I may not have all the answers, but I'm here to support you. What's going on?",
+                "I hear that you might be struggling with something. Would it help to talk about what's bothering you?"
+            ])
+        else:
+            return random.choice([
+                "I'm here and ready to chat about whatever interests you. What's been on your mind lately?",
+                "I'm curious about what you'd like to explore today. I've been learning so much and I'm eager to share ideas with you.",
+                "Every conversation teaches me something new. What would you like to discuss or discover together?",
+                "I find each chat fascinating in its own way. What topics or thoughts are capturing your attention these days?"
+            ])
+    
+    def learn_from_interaction(self, user_message, ai_response, keywords):
+        """Enhanced learning from user interactions"""
+        # Store keyword associations with better context
+        for keyword in keywords:
+            if keyword not in self.knowledge_base["topic_knowledge"]:
+                self.knowledge_base["topic_knowledge"][keyword] = {
+                    "mentions": 1,
+                    "contexts": [user_message],
+                    "facts": [],
+                    "sentiment_associations": [self.analyze_sentiment(user_message)],
+                    "question_patterns": [],
+                    "response_effectiveness": []
+                }
+            else:
+                topic_data = self.knowledge_base["topic_knowledge"][keyword]
+                topic_data["mentions"] += 1
+                topic_data["contexts"].append(user_message)
+                topic_data["sentiment_associations"].append(self.analyze_sentiment(user_message))
+                
+                # Track if user asked questions about this topic
+                if '?' in user_message:
+                    topic_data["question_patterns"].append(user_message)
+                
+                # Keep only recent data
+                for key in ["contexts", "sentiment_associations", "question_patterns"]:
+                    if len(topic_data[key]) > 10:
+                        topic_data[key] = topic_data[key][-10:]
+        
+        # Learn conversation patterns
+        self.learn_conversation_patterns(user_message, ai_response, keywords)
+        
+        # Learn new patterns from substantial messages
+        if len(user_message) > 10:
+            self.add_learned_pattern(user_message, ai_response)
     
     def clean_knowledge_content(self, content):
         """Clean and format knowledge content for natural conversation"""
