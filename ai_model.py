@@ -797,10 +797,6 @@ class HitoriAI:
         best_knowledge = max(db_knowledge, key=lambda x: x.get('confidence', 0.5))
         content = self.clean_knowledge_content(best_knowledge['content'])
         
-        # Limit content length to keep responses concise
-        if content and len(content) > 150:
-            content = content[:150] + "..."
-        
         if content:
             if context['is_question']:
                 response_templates = [
@@ -1060,16 +1056,30 @@ class HitoriAI:
         content = re.sub(r'\n+', ' ', content)  # Replace newlines with spaces
         content = content.strip()
         
-        # Look for the first meaningful sentence
+        # Look for meaningful sentences
         sentences = [s.strip() for s in content.split('.') if s.strip() and len(s.strip()) > 15 and '|' not in s]
         
         if sentences:
-            # Return the first good sentence, keep it short
-            good_sentence = sentences[0].strip()
-            # Limit to 100 characters for conciseness
-            if len(good_sentence) > 100:
-                good_sentence = good_sentence[:100] + "..."
-            return good_sentence + ('.' if not good_sentence.endswith('.') and not good_sentence.endswith('...') else '')
+            # Return up to 2 sentences, with a reasonable length limit
+            result_sentences = []
+            total_length = 0
+            
+            for sentence in sentences[:3]:  # Check up to 3 sentences
+                sentence = sentence.strip()
+                if total_length + len(sentence) > 300:  # Increased limit to 300 chars
+                    break
+                result_sentences.append(sentence)
+                total_length += len(sentence) + 2  # +2 for '. '
+                
+                # Stop after 2 complete sentences for readability
+                if len(result_sentences) >= 2:
+                    break
+            
+            if result_sentences:
+                result = '. '.join(result_sentences)
+                if not result.endswith('.'):
+                    result += '.'
+                return result
         
         # If no good sentences found, return empty to use fallback responses
         return ""
