@@ -334,15 +334,34 @@ class HitoriAI:
                 self.knowledge_base["topic_knowledge"][keyword] = {
                     "mentions": 1,
                     "contexts": [user_message],
-                    "facts": []
+                    "facts": [],
+                    "sentiment_associations": [self.analyze_sentiment(user_message)],
+                    "question_patterns": [],
+                    "response_effectiveness": []
                 }
             else:
-                self.knowledge_base["topic_knowledge"][keyword]["mentions"] += 1
-                self.knowledge_base["topic_knowledge"][keyword]["contexts"].append(user_message)
-                # Keep only recent contexts
-                if len(self.knowledge_base["topic_knowledge"][keyword]["contexts"]) > 5:
-                    self.knowledge_base["topic_knowledge"][keyword]["contexts"] = \
-                        self.knowledge_base["topic_knowledge"][keyword]["contexts"][-5:]
+                topic_data = self.knowledge_base["topic_knowledge"][keyword]
+                topic_data["mentions"] += 1
+                topic_data["contexts"].append(user_message)
+                
+                # Ensure all required fields exist
+                if "sentiment_associations" not in topic_data:
+                    topic_data["sentiment_associations"] = []
+                if "question_patterns" not in topic_data:
+                    topic_data["question_patterns"] = []
+                if "response_effectiveness" not in topic_data:
+                    topic_data["response_effectiveness"] = []
+                
+                topic_data["sentiment_associations"].append(self.analyze_sentiment(user_message))
+                
+                # Track if user asked questions about this topic
+                if '?' in user_message:
+                    topic_data["question_patterns"].append(user_message)
+                
+                # Keep only recent data
+                for key in ["contexts", "sentiment_associations", "question_patterns"]:
+                    if len(topic_data[key]) > 10:
+                        topic_data[key] = topic_data[key][-10:]
         
         # Learn new patterns from user message
         if len(user_message) > 10:  # Only learn from substantial messages
@@ -601,19 +620,21 @@ class HitoriAI:
         if not db_knowledge:
             db_knowledge = self.get_knowledge_from_memory(keywords)
         
-        # Enhanced knowledge base with more topics
+        # Enhanced knowledge base with more topics and better responses
         topic_responses = {
-            'k-on': "K-On! is a popular slice-of-life anime about high school girls in a light music club. The series follows Yui, Mio, Ritsu, Tsumugi, and later Azusa as they make music and memories together.",
-            'bocchi': "Bocchi the Rock! is an anime about Hitori Gotoh, a shy girl who plays guitar and dreams of being in a band. It's praised for its realistic portrayal of social anxiety and amazing music.",
-            'anime': "Anime is Japanese animation that spans countless genres - from action-packed shonen to heartwarming slice-of-life stories. Each season brings new shows that capture different aspects of human experience.",
-            'manga': "Manga are Japanese comics read from right to left. They're the source material for many anime and cover every genre imaginable, often with deeper storytelling than their animated adaptations.",
-            'music': "Music is a universal language that connects people across cultures. Whether it's classical, rock, pop, or any other genre, music has the power to evoke emotions and create lasting memories.",
-            'technology': "Technology continues to evolve rapidly, from AI and machine learning to quantum computing and space exploration. It's fascinating how it shapes our daily lives and future possibilities.",
-            'programming': "Programming is like solving puzzles with code. Each language has its own personality - Python's simplicity, JavaScript's versatility, or C++'s power. It's creative problem-solving at its finest.",
-            'art': "Art comes in so many forms - traditional painting, digital art, sculpture, photography. It's humanity's way of expressing emotions, ideas, and beauty that words sometimes can't capture.",
-            'books': "Books are portals to different worlds and perspectives. Whether fiction or non-fiction, they expand our understanding and imagination in ways that other media simply can't match.",
-            'games': "Gaming has evolved into an art form that combines storytelling, music, visuals, and interactivity. From indie gems to AAA blockbusters, games offer unique experiences.",
-            'science': "Science helps us understand our universe, from the tiniest quantum particles to massive galaxies. Every discovery opens new questions and possibilities."
+            'k-on': "K-On! is such a delightful slice-of-life anime! It follows five high school girls in their light music club - Yui, Mio, Ritsu, Tsumugi, and Azusa. The show perfectly captures the joy of friendship and music-making.",
+            'bocchi': "Bocchi the Rock! is absolutely fantastic! It tells the story of Hitori Gotoh, a socially anxious guitarist who joins a band. The series brilliantly portrays social anxiety while celebrating the power of music and friendship.",
+            'anime': "Anime is such a rich medium! From epic adventures like Attack on Titan to heartwarming stories like Your Name, there's something for everyone. What genres do you enjoy most?",
+            'manga': "Manga is incredible - there's so much depth and variety! Reading from right to left takes some getting used to, but the storytelling is often even richer than anime adaptations.",
+            'music': "Music truly is magical! It can instantly transport you to different emotions and memories. Whether it's a catchy pop song or a moving classical piece, music speaks to the soul.",
+            'technology': "Technology is evolving at an incredible pace! From AI assistants like me to quantum computers and space exploration, we're living in exciting times. What tech interests you most?",
+            'programming': "Programming is like creative problem-solving! Each language has its own charm - Python's elegance, JavaScript's flexibility, or Rust's safety. It's amazing how code can bring ideas to life.",
+            'art': "Art is such a beautiful form of expression! Whether it's a stunning painting, digital artwork, or sculpture, artists have this amazing ability to capture emotions and ideas visually.",
+            'books': "Books are wonderful adventures waiting to happen! They let us explore different worlds, meet fascinating characters, and see life through new perspectives. What kind of stories do you enjoy?",
+            'games': "Gaming has become such an art form! From indie masterpieces to AAA epics, games offer unique interactive storytelling experiences. The creativity in game design never ceases to amaze me.",
+            'science': "Science is endlessly fascinating! From tiny quantum particles to massive galaxies, every discovery reveals more about our incredible universe. What scientific topics capture your imagination?",
+            'hello': "Hello there! I'm excited to chat with you today. What's on your mind?",
+            'help': "I'd love to help you with whatever you need! Whether it's answering questions, having a conversation, or exploring topics together, I'm here for you."
         }
         
         if keywords:
@@ -770,30 +791,47 @@ class HitoriAI:
         """Generate intelligent response based on keywords and context"""
         main_keyword = keywords[0] if keywords else "that topic"
         
+        # Check if we have learned about this keyword before
+        has_knowledge = main_keyword in self.knowledge_base["topic_knowledge"]
+        
         if context['is_question']:
+            if has_knowledge:
+                topic_data = self.knowledge_base["topic_knowledge"][main_keyword]
+                if topic_data.get("facts"):
+                    fact = random.choice(topic_data["facts"])
+                    return f"Great question about {main_keyword}! {fact} What else would you like to know about it?"
+            
             responses = [
-                f"That's a thoughtful question about {main_keyword}. While I'm still learning about this topic, I'd love to explore it with you. What specific aspects are you curious about?",
-                f"Great question! {main_keyword} is something I find intriguing. What prompted your interest in this?",
-                f"I appreciate you asking about {main_keyword}. Though I'm still gathering knowledge on this, I'm curious about your perspective. What do you already know about it?"
+                f"That's a thoughtful question about {main_keyword}. I'm learning more about this topic all the time. What specific aspects are you curious about?",
+                f"Interesting question! I'd love to explore {main_keyword} with you. What prompted your curiosity about this?",
+                f"Good question about {main_keyword}! I'm always eager to learn alongside you. What do you already know about it?"
             ]
         elif context['sentiment'] == 'positive':
             responses = [
-                f"I can sense your enthusiasm about {main_keyword}! It's wonderful when something captures our interest. What excites you most about it?",
-                f"Your positive energy about {main_keyword} is contagious! I'd love to learn more about why this topic resonates with you.",
-                f"It's great to hear you're interested in {main_keyword}! I'm always eager to learn from people's passions. What got you started with this?"
+                f"I can tell you're excited about {main_keyword}! Your enthusiasm is infectious. What makes this topic so interesting to you?",
+                f"I love your positive energy about {main_keyword}! It's clear this resonates with you. What got you interested in it?",
+                f"Your excitement about {main_keyword} is wonderful! I'd love to hear what draws you to this topic."
             ]
         elif context['sentiment'] == 'negative':
             responses = [
-                f"I understand you might have some concerns about {main_keyword}. Sometimes it helps to talk through what's bothering us. What's your experience been like?",
-                f"It sounds like {main_keyword} might be frustrating for you. I'm here to listen and maybe we can work through it together. What's been challenging?",
-                f"I hear that {main_keyword} isn't sitting well with you. Would you like to share what's been difficult about it?"
+                f"I sense you might have mixed feelings about {main_keyword}. Sometimes talking helps clarify our thoughts. What's your experience been?",
+                f"It seems like {main_keyword} might be challenging for you. I'm here to listen. What's been difficult about it?",
+                f"I understand {main_keyword} might not be sitting well with you. Would you like to share what's concerning you?"
             ]
         else:
-            responses = [
-                f"I find {main_keyword} to be a fascinating topic. There's always so much to discover and discuss. What draws your attention to it?",
-                f"That's an interesting subject - {main_keyword}. I'm curious about your thoughts and experiences with it. What would you like to explore?",
-                f"I'm intrigued by your mention of {main_keyword}. Everyone has unique perspectives on different topics. What's your take on this?"
-            ]
+            # For neutral sentiment, be more engaging and conversational
+            if has_knowledge:
+                responses = [
+                    f"Ah, {main_keyword}! That's a topic I've been learning about. What's your take on it?",
+                    f"I find {main_keyword} quite fascinating. There's always more to discover. What interests you about it?",
+                    f"{main_keyword} is such an interesting subject. I'm curious about your perspective on it."
+                ]
+            else:
+                responses = [
+                    f"I'd love to learn more about {main_keyword} from you. What makes it interesting?",
+                    f"That's a great topic - {main_keyword}. I'm always eager to explore new subjects. What would you like to discuss about it?",
+                    f"I'm curious about {main_keyword}. Everyone has unique insights on different topics. What's yours?"
+                ]
         
         return random.choice(responses)
     
@@ -831,40 +869,7 @@ class HitoriAI:
                 "I find each chat fascinating in its own way. What topics or thoughts are capturing your attention these days?"
             ])
     
-    def learn_from_interaction(self, user_message, ai_response, keywords):
-        """Enhanced learning from user interactions"""
-        # Store keyword associations with better context
-        for keyword in keywords:
-            if keyword not in self.knowledge_base["topic_knowledge"]:
-                self.knowledge_base["topic_knowledge"][keyword] = {
-                    "mentions": 1,
-                    "contexts": [user_message],
-                    "facts": [],
-                    "sentiment_associations": [self.analyze_sentiment(user_message)],
-                    "question_patterns": [],
-                    "response_effectiveness": []
-                }
-            else:
-                topic_data = self.knowledge_base["topic_knowledge"][keyword]
-                topic_data["mentions"] += 1
-                topic_data["contexts"].append(user_message)
-                topic_data["sentiment_associations"].append(self.analyze_sentiment(user_message))
-                
-                # Track if user asked questions about this topic
-                if '?' in user_message:
-                    topic_data["question_patterns"].append(user_message)
-                
-                # Keep only recent data
-                for key in ["contexts", "sentiment_associations", "question_patterns"]:
-                    if len(topic_data[key]) > 10:
-                        topic_data[key] = topic_data[key][-10:]
-        
-        # Learn conversation patterns
-        self.learn_conversation_patterns(user_message, ai_response, keywords)
-        
-        # Learn new patterns from substantial messages
-        if len(user_message) > 10:
-            self.add_learned_pattern(user_message, ai_response)
+    
     
     def clean_knowledge_content(self, content):
         """Clean and format knowledge content for natural conversation"""
