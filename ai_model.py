@@ -613,6 +613,9 @@ class HitoriAI:
         # Analyze conversation context
         context = self.analyze_conversation_context(message, keywords)
         
+        # Check for conversation history to avoid repetition
+        recent_responses = [entry.get('ai', '') for entry in self.conversation_memory[-5:] if 'ai' in entry]
+        
         # Try database first
         db_knowledge = self.get_knowledge_from_database(keywords)
         
@@ -620,19 +623,29 @@ class HitoriAI:
         if not db_knowledge:
             db_knowledge = self.get_knowledge_from_memory(keywords)
         
-        # Enhanced knowledge base with more topics and better responses
+        # Enhanced knowledge base with more varied responses
         topic_responses = {
+            'pepsi': [
+                "Pepsi has quite a history! It was created in 1893 by pharmacist Caleb Bradham. Interesting how it became Coca-Cola's main rival.",
+                "The Cola Wars between Pepsi and Coke were fascinating! Remember the Pepsi Challenge campaigns?",
+                "Pepsi's marketing has always been bold - from the 'Pepsi Generation' to celebrity endorsements. What do you think of their approach?",
+                "Did you know Pepsi once briefly owned a fleet of Soviet warships? Wild business deals in the 80s!"
+            ],
+            'coke': [
+                "Coca-Cola is the classic! That secret formula has been kept under wraps for over a century.",
+                "The polar bear ads and 'Share a Coke' campaigns were genius marketing moves.",
+                "Coke's global reach is incredible - it's available in almost every country on Earth."
+            ],
+            'drinks': [
+                "There are so many interesting beverages out there! From artisanal sodas to energy drinks to traditional teas.",
+                "The beverage industry is always innovating - have you tried any unique flavors lately?",
+                "I find it fascinating how different cultures have their own signature drinks."
+            ],
             'k-on': "K-On! is such a delightful slice-of-life anime! It follows five high school girls in their light music club - Yui, Mio, Ritsu, Tsumugi, and Azusa. The show perfectly captures the joy of friendship and music-making.",
             'bocchi': "Bocchi the Rock! is absolutely fantastic! It tells the story of Hitori Gotoh, a socially anxious guitarist who joins a band. The series brilliantly portrays social anxiety while celebrating the power of music and friendship.",
             'anime': "Anime is such a rich medium! From epic adventures like Attack on Titan to heartwarming stories like Your Name, there's something for everyone. What genres do you enjoy most?",
-            'manga': "Manga is incredible - there's so much depth and variety! Reading from right to left takes some getting used to, but the storytelling is often even richer than anime adaptations.",
             'music': "Music truly is magical! It can instantly transport you to different emotions and memories. Whether it's a catchy pop song or a moving classical piece, music speaks to the soul.",
             'technology': "Technology is evolving at an incredible pace! From AI assistants like me to quantum computers and space exploration, we're living in exciting times. What tech interests you most?",
-            'programming': "Programming is like creative problem-solving! Each language has its own charm - Python's elegance, JavaScript's flexibility, or Rust's safety. It's amazing how code can bring ideas to life.",
-            'art': "Art is such a beautiful form of expression! Whether it's a stunning painting, digital artwork, or sculpture, artists have this amazing ability to capture emotions and ideas visually.",
-            'books': "Books are wonderful adventures waiting to happen! They let us explore different worlds, meet fascinating characters, and see life through new perspectives. What kind of stories do you enjoy?",
-            'games': "Gaming has become such an art form! From indie masterpieces to AAA epics, games offer unique interactive storytelling experiences. The creativity in game design never ceases to amaze me.",
-            'science': "Science is endlessly fascinating! From tiny quantum particles to massive galaxies, every discovery reveals more about our incredible universe. What scientific topics capture your imagination?",
             'hello': "Hello there! I'm excited to chat with you today. What's on your mind?",
             'help': "I'd love to help you with whatever you need! Whether it's answering questions, having a conversation, or exploring topics together, I'm here for you."
         }
@@ -644,18 +657,19 @@ class HitoriAI:
             matched_topic = self.find_best_topic_match(keywords, topic_responses, context)
             
             if matched_topic:
-                description = topic_responses[matched_topic]
-                return self.generate_contextual_topic_response(matched_topic, description, context, message)
+                response = self.select_varied_response(matched_topic, topic_responses, recent_responses, context, message)
+                if response:
+                    return response
             
             # Use database knowledge if available
             if db_knowledge:
-                return self.generate_knowledge_based_response(db_knowledge, keywords, context)
+                return self.generate_knowledge_based_response(db_knowledge, keywords, context, recent_responses)
             
             # Generate intelligent response based on context and keywords
-            return self.generate_intelligent_keyword_response(keywords, context, message)
+            return self.generate_intelligent_keyword_response(keywords, context, message, recent_responses)
         
         # Analyze message sentiment and respond appropriately
-        return self.generate_sentiment_based_response(message, context)
+        return self.generate_sentiment_based_response(message, context, recent_responses)
     
     def analyze_conversation_context(self, message, keywords):
         """Analyze conversation context for better responses"""
@@ -771,8 +785,11 @@ class HitoriAI:
         response += random.choice(follow_ups)
         return response
     
-    def generate_knowledge_based_response(self, db_knowledge, keywords, context):
+    def generate_knowledge_based_response(self, db_knowledge, keywords, context, recent_responses=None):
         """Generate response using database knowledge with context"""
+        if recent_responses is None:
+            recent_responses = []
+            
         main_keyword = keywords[0] if keywords else "that"
         
         # Use the most relevant knowledge
@@ -781,14 +798,34 @@ class HitoriAI:
         
         if content:
             if context['is_question']:
-                return f"Based on what I've learned, {content} Is there anything specific about {main_keyword} you'd like to know more about?"
+                response_templates = [
+                    f"Based on what I've learned, {content} Is there anything specific about {main_keyword} you'd like to know more about?",
+                    f"From my knowledge, {content} What else would you like to know about {main_keyword}?",
+                    f"I can tell you that {content} Any other questions about {main_keyword}?",
+                    f"Here's what I know: {content} What interests you most about {main_keyword}?"
+                ]
             else:
-                return f"That's interesting about {main_keyword}! {content} What's your experience with this topic?"
+                response_templates = [
+                    f"That's interesting about {main_keyword}! {content} What's your experience with this topic?",
+                    f"Ah, {main_keyword}! {content} What do you think about that?",
+                    f"I know a bit about {main_keyword}. {content} How does that relate to your interest?",
+                    f"Regarding {main_keyword}, {content} What's your perspective on this?"
+                ]
+            
+            # Select response that's not too similar to recent ones
+            for template in response_templates:
+                if not any(self.responses_too_similar(template, recent) for recent in recent_responses):
+                    return template
+            
+            return response_templates[0]  # Fallback to first if all are similar
         else:
-            return self.generate_intelligent_keyword_response(keywords, context, "")
+            return self.generate_intelligent_keyword_response(keywords, context, "", recent_responses)
     
-    def generate_intelligent_keyword_response(self, keywords, context, original_message):
+    def generate_intelligent_keyword_response(self, keywords, context, original_message, recent_responses=None):
         """Generate intelligent response based on keywords and context"""
+        if recent_responses is None:
+            recent_responses = []
+            
         main_keyword = keywords[0] if keywords else "that topic"
         
         # Check if we have learned about this keyword before
@@ -804,19 +841,25 @@ class HitoriAI:
             responses = [
                 f"That's a thoughtful question about {main_keyword}. I'm learning more about this topic all the time. What specific aspects are you curious about?",
                 f"Interesting question! I'd love to explore {main_keyword} with you. What prompted your curiosity about this?",
-                f"Good question about {main_keyword}! I'm always eager to learn alongside you. What do you already know about it?"
+                f"Good question about {main_keyword}! I'm always eager to learn alongside you. What do you already know about it?",
+                f"You've got me thinking about {main_keyword}. What would you like to dive into first?",
+                f"That's worth exploring! What angle of {main_keyword} interests you most?"
             ]
         elif context['sentiment'] == 'positive':
             responses = [
                 f"I can tell you're excited about {main_keyword}! Your enthusiasm is infectious. What makes this topic so interesting to you?",
                 f"I love your positive energy about {main_keyword}! It's clear this resonates with you. What got you interested in it?",
-                f"Your excitement about {main_keyword} is wonderful! I'd love to hear what draws you to this topic."
+                f"Your excitement about {main_keyword} is wonderful! I'd love to hear what draws you to this topic.",
+                f"Your enthusiasm for {main_keyword} is great! What's the most exciting aspect for you?",
+                f"I can feel your passion for {main_keyword}! What sparked this interest?"
             ]
         elif context['sentiment'] == 'negative':
             responses = [
                 f"I sense you might have mixed feelings about {main_keyword}. Sometimes talking helps clarify our thoughts. What's your experience been?",
                 f"It seems like {main_keyword} might be challenging for you. I'm here to listen. What's been difficult about it?",
-                f"I understand {main_keyword} might not be sitting well with you. Would you like to share what's concerning you?"
+                f"I understand {main_keyword} might not be sitting well with you. Would you like to share what's concerning you?",
+                f"I hear some hesitation about {main_keyword}. What's been troubling you about it?",
+                f"It sounds like {main_keyword} has been on your mind. Want to talk through what's bothering you?"
             ]
         else:
             # For neutral sentiment, be more engaging and conversational
@@ -824,50 +867,170 @@ class HitoriAI:
                 responses = [
                     f"Ah, {main_keyword}! That's a topic I've been learning about. What's your take on it?",
                     f"I find {main_keyword} quite fascinating. There's always more to discover. What interests you about it?",
-                    f"{main_keyword} is such an interesting subject. I'm curious about your perspective on it."
+                    f"{main_keyword} is such an interesting subject. I'm curious about your perspective on it.",
+                    f"I've encountered {main_keyword} before. What's your experience with it?",
+                    f"That's a topic I'm familiar with! What would you like to discuss about {main_keyword}?"
                 ]
             else:
                 responses = [
                     f"I'd love to learn more about {main_keyword} from you. What makes it interesting?",
                     f"That's a great topic - {main_keyword}. I'm always eager to explore new subjects. What would you like to discuss about it?",
-                    f"I'm curious about {main_keyword}. Everyone has unique insights on different topics. What's yours?"
+                    f"I'm curious about {main_keyword}. Everyone has unique insights on different topics. What's yours?",
+                    f"Tell me more about {main_keyword}! I'm always learning something new.",
+                    f"That's intriguing! What's the story with {main_keyword}?"
                 ]
         
-        return random.choice(responses)
+        # Filter responses that are too similar to recent ones
+        available_responses = [r for r in responses if not any(self.responses_too_similar(r, recent) for recent in recent_responses)]
+        
+        if available_responses:
+            return random.choice(available_responses)
+        else:
+            # Generate a completely fresh response if all are too similar
+            return f"That's an interesting topic! What would you like to explore about {main_keyword}?"
     
-    def generate_sentiment_based_response(self, message, context):
+    def select_varied_response(self, topic, topic_responses, recent_responses, context, message):
+        """Select a varied response that avoids recent repetitions"""
+        if isinstance(topic_responses[topic], list):
+            # Filter out responses that are too similar to recent ones
+            available_responses = []
+            for response in topic_responses[topic]:
+                is_too_similar = False
+                for recent in recent_responses:
+                    if self.responses_too_similar(response, recent):
+                        is_too_similar = True
+                        break
+                if not is_too_similar:
+                    available_responses.append(response)
+            
+            if available_responses:
+                base_response = random.choice(available_responses)
+                return self.add_contextual_flourish(base_response, context, message)
+            else:
+                # If all responses are too similar, generate a new one
+                return self.generate_fresh_response(topic, context, message)
+        else:
+            # Single response - add variation through context
+            return self.add_contextual_flourish(topic_responses[topic], context, message)
+    
+    def responses_too_similar(self, response1, response2):
+        """Check if two responses are too similar"""
+        if not response1 or not response2:
+            return False
+        
+        # Convert to lowercase and split into words
+        words1 = set(response1.lower().split())
+        words2 = set(response2.lower().split())
+        
+        # Calculate overlap
+        overlap = len(words1.intersection(words2))
+        total_unique = len(words1.union(words2))
+        
+        if total_unique == 0:
+            return False
+        
+        similarity = overlap / total_unique
+        return similarity > 0.6  # 60% similarity threshold
+    
+    def add_contextual_flourish(self, base_response, context, message):
+        """Add contextual variation to a base response"""
+        if context['is_question']:
+            question_starters = [
+                "Great question! ",
+                "That's interesting you ask! ",
+                "I'm glad you brought that up. ",
+                ""
+            ]
+            base_response = random.choice(question_starters) + base_response
+        
+        if context['has_enthusiasm']:
+            enthusiasm_enders = [
+                " Your excitement is contagious!",
+                " I love the enthusiasm!",
+                " What got you so interested in this?",
+                ""
+            ]
+            base_response += random.choice(enthusiasm_enders)
+        elif random.choice([True, False]):
+            general_enders = [
+                " What's your take on this?",
+                " Have you had experience with this?",
+                " What interests you most about it?",
+                " What would you like to know more about?",
+                ""
+            ]
+            base_response += random.choice(general_enders)
+        
+        return base_response
+    
+    def generate_fresh_response(self, topic, context, message):
+        """Generate a completely fresh response when others are too repetitive"""
+        fresh_approaches = {
+            'pepsi': [
+                "You know, beverage history is pretty wild! What draws you to Pepsi specifically?",
+                "The soft drink industry has such interesting stories. Any particular aspect you're curious about?",
+                "That's a classic brand! Are you more interested in the business side or just enjoy the taste?"
+            ],
+            'coke': [
+                "The Coca-Cola story is fascinating from a business perspective. What interests you about it?",
+                "That's one of the most recognizable brands worldwide! What aspect caught your attention?"
+            ]
+        }
+        
+        if topic in fresh_approaches:
+            return random.choice(fresh_approaches[topic])
+        else:
+            return f"I'm always learning more about {topic}. What specifically interests you about it?"
+    
+    def generate_sentiment_based_response(self, message, context, recent_responses=None):
         """Generate response based on message sentiment when no keywords are found"""
+        if recent_responses is None:
+            recent_responses = []
+            
         if context['is_greeting']:
-            return random.choice([
+            responses = [
                 "Hello! I'm excited to chat with you today. What's on your mind?",
                 "Hi there! I'm feeling quite curious today. What would you like to explore together?",
-                "Hey! Great to see you. I've been learning so much lately and I'm eager to share. What interests you?"
-            ])
+                "Hey! Great to see you. I've been learning so much lately and I'm eager to share. What interests you?",
+                "Hello! Ready for an interesting conversation? What would you like to talk about?"
+            ]
         elif context['is_farewell']:
-            return random.choice([
+            responses = [
                 "It was wonderful chatting with you! I always learn something new from our conversations. See you soon!",
                 "Take care! I really enjoyed our discussion. Until next time!",
-                "Goodbye! Thanks for the engaging conversation. I'll be here whenever you want to chat again."
-            ])
+                "Goodbye! Thanks for the engaging conversation. I'll be here whenever you want to chat again.",
+                "See you later! I appreciate our chat today."
+            ]
         elif context['sentiment'] == 'positive':
-            return random.choice([
+            responses = [
                 "I love your positive energy! It's contagious and makes our conversation so much more enjoyable. What's bringing you joy today?",
                 "Your enthusiasm is wonderful! It reminds me why I enjoy learning and growing through our chats. What's got you excited?",
-                "That positive vibe is amazing! I find that good energy leads to the best conversations. What's on your mind?"
-            ])
+                "That positive vibe is amazing! I find that good energy leads to the best conversations. What's on your mind?",
+                "Your good mood is infectious! What's making you feel so positive today?"
+            ]
         elif context['sentiment'] == 'negative':
-            return random.choice([
+            responses = [
                 "I can sense you might be going through something difficult. Sometimes talking helps. I'm here to listen if you'd like to share.",
                 "It sounds like things might be challenging right now. I may not have all the answers, but I'm here to support you. What's going on?",
-                "I hear that you might be struggling with something. Would it help to talk about what's bothering you?"
-            ])
+                "I hear that you might be struggling with something. Would it help to talk about what's bothering you?",
+                "I'm here to listen if you need someone to talk to. What's on your mind?"
+            ]
         else:
-            return random.choice([
+            responses = [
                 "I'm here and ready to chat about whatever interests you. What's been on your mind lately?",
                 "I'm curious about what you'd like to explore today. I've been learning so much and I'm eager to share ideas with you.",
                 "Every conversation teaches me something new. What would you like to discuss or discover together?",
-                "I find each chat fascinating in its own way. What topics or thoughts are capturing your attention these days?"
-            ])
+                "I find each chat fascinating in its own way. What topics or thoughts are capturing your attention these days?",
+                "What's interesting you today? I'm always up for a good conversation."
+            ]
+        
+        # Filter out responses too similar to recent ones
+        available_responses = [r for r in responses if not any(self.responses_too_similar(r, recent) for recent in recent_responses)]
+        
+        if available_responses:
+            return random.choice(available_responses)
+        else:
+            return "I'm here and ready to chat! What would you like to talk about?"
     
     
     
