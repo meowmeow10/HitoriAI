@@ -17,8 +17,10 @@ class HitoriAI:
     """
     
     def __init__(self, knowledge_file='hitori_knowledge.json', database_url=None):
-        # Initialize database connection
-        self.database_url = database_url or os.environ.get('DATABASE_URL')
+        # Initialize database connection - prioritize Neon database
+        self.database_url = (database_url or 
+                           os.environ.get('NEON_DATABASE_URL') or 
+                           os.environ.get('DATABASE_URL'))
         self.engine = None
         self.Session = None
         self.db_session = None
@@ -26,17 +28,26 @@ class HitoriAI:
         
         if self.database_url:
             try:
+                # Configure for Neon database
+                connect_args = {"sslmode": "require"} if "neon.tech" in self.database_url else {"sslmode": "prefer"}
+                
                 self.engine = create_engine(
                     self.database_url,
                     pool_recycle=300,
                     pool_pre_ping=True,
-                    connect_args={"sslmode": "prefer"}
+                    connect_args=connect_args
                 )
                 Base.metadata.create_all(self.engine)
                 self.Session = sessionmaker(bind=self.engine)
                 self.db_session = self.Session()
                 self.web_scraper = WebKnowledgeScraper(self.db_session)
-                logging.info("Database connection established")
+                
+                # Log which database we're using
+                if "neon.tech" in self.database_url:
+                    logging.info("Connected to Neon database successfully")
+                else:
+                    logging.info("Connected to PostgreSQL database")
+                    
             except Exception as e:
                 logging.error(f"Database connection failed: {e}")
                 self.db_session = None

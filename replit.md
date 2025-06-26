@@ -23,7 +23,9 @@ Hitori is a Flask-based AI chat assistant featuring a custom self-trained AI mod
 ### Data Storage
 - **Session Storage**: Flask sessions (server-side, likely file-based by default)
 - **Message History**: Stored in session during active conversation
-- **Database**: PostgreSQL packages available but not yet implemented
+- **Database**: Custom Neon PostgreSQL database for persistent knowledge storage
+- **Knowledge Base**: AI learning data stored in PostgreSQL with automatic web scraping
+- **Conversation History**: User interactions tracked for continuous AI improvement
 
 ## Key Components
 
@@ -111,6 +113,7 @@ Changelog:
 - June 26, 2025: Enhanced knowledge extraction for specific topics like anime/entertainment
 - June 26, 2025: Implemented fallback training system that works with or without database
 - June 26, 2025: Successfully tested with K-On! topic - AI now learns and responds with factual information
+- June 26, 2025: Connected to custom Neon database for cloud-based knowledge persistence
 ```
 
 ## User Preferences
