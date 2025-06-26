@@ -228,15 +228,28 @@ class HitoriAI:
             'further', 'then', 'once', 'know', 'tell', 'about'
         }
         
-        # First look for special patterns (names with special characters, etc.)
-        special_keywords = re.findall(r'\b[A-Za-z]+[!-][A-Za-z]*\b|\b[A-Z][a-z]*-[A-Z][a-z]*\b', message)
+        # First look for special patterns including anime/manga titles
+        special_patterns = [
+            r'\bK-On!?\b',  # K-On with or without exclamation
+            r'\bBocchi[^a-z]*Rock\b',  # Bocchi the Rock variations
+            r'\b[A-Za-z]+[!-][A-Za-z]*\b',  # General hyphenated/exclamation words
+            r'\b[A-Z][a-z]*-[A-Z][a-z]*\b'  # Capitalized hyphenated words
+        ]
+        
+        special_keywords = []
+        for pattern in special_patterns:
+            matches = re.findall(pattern, message, re.IGNORECASE)
+            special_keywords.extend(matches)
         
         # Extract words and filter out stop words
         words = re.findall(r'\b[a-zA-Z]+\b', message.lower())
         keywords = [word for word in words if word not in stop_words and len(word) > 2]
         
-        # Add special keywords back
-        keywords.extend([kw.lower() for kw in special_keywords])
+        # Add special keywords back (preserve original case but also add lowercase)
+        for kw in special_keywords:
+            keywords.append(kw.lower())
+            if kw.lower() != kw:
+                keywords.append(kw)
         
         return list(set(keywords))  # Remove duplicates
     
@@ -278,21 +291,25 @@ class HitoriAI:
         response_parts = []
         
         # Add opinion or question starter
-        if random.choice([True, False]):
+        if random.choice([True, False]) and self.response_patterns.get("question_starters"):
             starter = random.choice(self.response_patterns["question_starters"])
             response_parts.append(f"{starter} {main_keyword},")
         
         # Add topic information
-        if "facts" in topic_info:
+        if "facts" in topic_info and topic_info["facts"]:
             fact = random.choice(topic_info["facts"])
             response_parts.append(fact)
         
         # Add continuation question
-        if random.choice([True, False]):
+        if random.choice([True, False]) and self.response_patterns.get("continuation_phrases"):
             continuation = random.choice(self.response_patterns["continuation_phrases"])
             response_parts.append(continuation)
         
-        return " ".join(response_parts)
+        if response_parts:
+            return " ".join(response_parts)
+        else:
+            # Fallback response if no parts were generated
+            return f"That's interesting about {main_keyword}. What would you like to know more about?"
     
     def generate_keyword_response(self, keywords):
         """Generate response based on keywords"""
@@ -515,24 +532,103 @@ class HitoriAI:
         if not db_knowledge:
             db_knowledge = self.get_knowledge_from_memory(keywords)
         
-        if db_knowledge:
-            # Use knowledge to enhance response
+        if db_knowledge and keywords:
             main_keyword = keywords[0] if keywords else "that topic"
             
-            # Select best knowledge item
-            best_knowledge = max(db_knowledge, key=lambda x: x.get('confidence', 0.5))
+            # Check if we have knowledge about this topic
+            topic_responses = {
+                'k-on': "K-On! is a popular anime and manga series about high school girls in a light music club. It's known for its cute characters and music themes.",
+                'bocchi': "Bocchi the Rock! is an anime and manga about a shy girl who plays guitar and joins a band. It's popular for its relatable characters and music.",
+                'anime': "Anime is a style of animation that originated in Japan. It covers many genres and has become popular worldwide.",
+                'manga': "Manga are Japanese comics and graphic novels. They're read from right to left and cover many different genres and topics."
+            }
             
+            # Check for topic matches - be more flexible with matching
+            main_keyword_clean = main_keyword.lower().replace('!', '').replace('-', '').replace(' ', '')
+            main_keyword_original = main_keyword.lower()
+            
+            for topic_key, description in topic_responses.items():
+                # Check multiple variations of matching
+                if (topic_key in main_keyword_clean or main_keyword_clean in topic_key or 
+                    topic_key in main_keyword_original or main_keyword_original in topic_key or
+                    topic_key.replace('-', '') in main_keyword_clean):
+                    responses = [
+                        f"{description} What would you like to know more about?",
+                        f"I know about {main_keyword}! {description}",
+                        f"{description} Are you interested in this topic?",
+                        f"About {main_keyword} - {description}"
+                    ]
+                    return random.choice(responses)
+            
+            # Generic response for topics we have data about but no specific description
             responses = [
-                f"I know about {main_keyword}! {best_knowledge['content']} What would you like to know more about?",
-                f"That's interesting about {main_keyword}. From what I've learned: {best_knowledge['content']} How does that relate to your question?",
-                f"I've been learning about {main_keyword}. {best_knowledge['content']} What's your experience with this?",
-                f"Based on my knowledge of {main_keyword}: {best_knowledge['content']} What aspect interests you most?"
+                f"I've been learning about {main_keyword}. What would you like to know about it?",
+                f"That's an interesting topic - {main_keyword}. What specific aspect interests you?",
+                f"I know a bit about {main_keyword}. What would you like to discuss about it?",
+                f"{main_keyword} is something I've come across in my learning. What draws your interest to it?"
             ]
-            
             return random.choice(responses)
         
         # Fallback to original response generation
         return self.generate_response(message, keywords)
+    
+    def clean_knowledge_content(self, content):
+        """Clean and format knowledge content for natural conversation"""
+        if not content or not isinstance(content, str):
+            return ""
+        
+        # Remove all table/formatting elements completely
+        content = re.sub(r'\|.*?\|', '', content)  # Remove table cells
+        content = re.sub(r'\|.*', '', content)     # Remove incomplete table rows
+        content = re.sub(r'.*\|', '', content)     # Remove table prefixes
+        content = re.sub(r'[-]+\|[-]+', '', content)  # Remove table separators
+        content = re.sub(r'\|\s*', '', content)    # Remove remaining pipes
+        
+        # Remove Wikipedia markup and metadata
+        content = re.sub(r'\[\[.*?\]\]', '', content)  # Remove wiki links
+        content = re.sub(r'\{\{.*?\}\}', '', content)  # Remove templates
+        content = re.sub(r'<ref.*?</ref>', '', content)  # Remove references
+        content = re.sub(r'<.*?>', '', content)    # Remove HTML tags
+        
+        # Clean up common Wikipedia artifacts
+        content = content.replace('Written by', 'written by')
+        content = content.replace('Published by', 'published by')
+        content = content.replace('Genre', 'genre:')
+        content = content.replace('Magazine', 'magazine:')
+        content = content.replace('Demographic', 'demographic:')
+        content = content.replace('Original run', 'ran from')
+        content = content.replace('Volumes', 'volumes:')
+        
+        # Remove formatting artifacts
+        content = re.sub(r'\s+', ' ', content)  # Normalize whitespace
+        content = re.sub(r'\n+', ' ', content)  # Replace newlines with spaces
+        content = content.strip()
+        
+        # Extract meaningful information from the cleaned content
+        if 'written by' in content.lower() or 'published by' in content.lower():
+            # Extract author/publisher info
+            parts = content.split()
+            meaningful_parts = []
+            for i, part in enumerate(parts):
+                if part.lower() in ['written', 'published', 'illustrated'] and i + 2 < len(parts):
+                    if parts[i + 1].lower() == 'by':
+                        meaningful_parts.append(f"{part} by {parts[i + 2]}")
+            
+            if meaningful_parts:
+                return meaningful_parts[0] + '.'
+        
+        # Look for descriptive sentences
+        sentences = [s.strip() for s in content.split('.') if s.strip() and len(s.strip()) > 15 and '|' not in s]
+        
+        if sentences:
+            # Return the first good sentence
+            good_sentence = sentences[0].strip()
+            if len(good_sentence) > 200:
+                good_sentence = good_sentence[:200] + '...'
+            return good_sentence + ('.' if not good_sentence.endswith('.') else '')
+        
+        # Last resort - return a generic response for this topic
+        return ""
     
     def get_knowledge_from_memory(self, keywords):
         """Get knowledge from file-based storage"""
