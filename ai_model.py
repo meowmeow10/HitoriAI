@@ -624,6 +624,12 @@ class HitoriAI:
         if not db_knowledge:
             db_knowledge = self.get_knowledge_from_memory(keywords)
         
+        # If still no knowledge and we have keywords, try Wikipedia search
+        if not db_knowledge and keywords and context.get('is_question'):
+            wikipedia_knowledge = self.search_wikipedia_for_keywords(keywords)
+            if wikipedia_knowledge:
+                db_knowledge = wikipedia_knowledge
+        
         # Enhanced knowledge base with more varied responses
         topic_responses = {
             'pepsi': [
@@ -1115,6 +1121,77 @@ class HitoriAI:
                         })
         
         return knowledge_items
+    
+    def search_wikipedia_for_keywords(self, keywords):
+        """Search Wikipedia for unknown keywords and extract knowledge"""
+        try:
+            if not self.web_scraper:
+                # Create a simple scraper even without database
+                from web_scraper import WebKnowledgeScraper
+                simple_scraper = WebKnowledgeScraper(None)
+            else:
+                simple_scraper = self.web_scraper
+            
+            knowledge_items = []
+            
+            # Try each keyword on Wikipedia
+            for keyword in keywords[:2]:  # Limit to 2 keywords to avoid too many requests
+                # Clean keyword for Wikipedia URL
+                clean_keyword = keyword.replace(' ', '_').replace('!', '%21')
+                wikipedia_url = f'https://en.wikipedia.org/wiki/{clean_keyword}'
+                
+                try:
+                    # Scrape Wikipedia page
+                    result = simple_scraper.scrape_url(wikipedia_url)
+                    
+                    if result['success'] and result['knowledge_items']:
+                        # Store knowledge for future use
+                        for item in result['knowledge_items'][:3]:  # Limit to 3 facts per keyword
+                            knowledge_items.append({
+                                'topic': item['topic'],
+                                'content': item['content'],
+                                'confidence': item['confidence_score'],
+                                'source': f'wikipedia:{wikipedia_url}'
+                            })
+                            
+                            # Also store in memory for future use
+                            self.store_learned_knowledge(item['topic'], item['content'], item['confidence_score'], wikipedia_url)
+                        
+                        # If we found good knowledge, break to avoid too much info
+                        if len(knowledge_items) >= 2:
+                            break
+                            
+                except Exception as e:
+                    logging.debug(f"Could not fetch Wikipedia page for {keyword}: {e}")
+                    continue
+            
+            return knowledge_items if knowledge_items else None
+            
+        except Exception as e:
+            logging.error(f"Error in Wikipedia search: {e}")
+            return None
+    
+    def store_learned_knowledge(self, topic, content, confidence, source):
+        """Store newly learned knowledge in the knowledge base"""
+        topic_lower = topic.lower()
+        
+        if topic_lower not in self.knowledge_base["topic_knowledge"]:
+            self.knowledge_base["topic_knowledge"][topic_lower] = {
+                "mentions": 1,
+                "contexts": [],
+                "facts": [content],
+                "confidence": confidence,
+                "source": source
+            }
+        else:
+            # Add fact if not already present
+            topic_data = self.knowledge_base["topic_knowledge"][topic_lower]
+            if content not in topic_data.get("facts", []):
+                topic_data["facts"].append(content)
+                topic_data["mentions"] = topic_data.get("mentions", 0) + 1
+        
+        # Save knowledge
+        self.save_knowledge()
     
     def reset_knowledge(self):
         """Reset knowledge base (for testing or fresh start)"""
