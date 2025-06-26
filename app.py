@@ -93,5 +93,25 @@ def stats():
     """Get AI learning statistics"""
     return jsonify(hitori_ai.get_conversation_stats())
 
+@app.route('/train', methods=['POST'])
+def train_ai():
+    """Train AI from web sources"""
+    try:
+        data = request.get_json() or {}
+        topics = data.get('topics', [])
+        max_sources = data.get('max_sources', 5)
+        
+        # Start web training
+        result = hitori_ai.train_from_web(topics, max_sources)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logging.error(f"Error in training endpoint: {str(e)}")
+        return jsonify({
+            'error': f'Training failed: {str(e)}',
+            'success': False
+        }), 500
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

@@ -6,6 +6,7 @@ class HitoriChat {
         this.sendBtn = document.getElementById('send-btn');
         this.voiceBtn = document.getElementById('voice-btn');
         this.statsBtn = document.getElementById('stats-btn');
+        this.trainBtn = document.getElementById('train-btn');
         this.clearBtn = document.getElementById('clear-btn');
         this.loadingOverlay = document.getElementById('loading-overlay');
         this.voiceStatus = document.getElementById('voice-status');
@@ -38,6 +39,9 @@ class HitoriChat {
         
         // Stats button
         this.statsBtn.addEventListener('click', () => this.showStats());
+        
+        // Train button
+        this.trainBtn.addEventListener('click', () => this.trainFromWeb());
         
         // Clear chat button
         this.clearBtn.addEventListener('click', () => this.clearChat());
@@ -332,6 +336,9 @@ class HitoriChat {
                         <li><strong>Total Conversations:</strong> ${stats.total_interactions}</li>
                         <li><strong>Topics Learned:</strong> ${stats.topics_learned}</li>
                         <li><strong>Response Patterns:</strong> ${stats.patterns_learned}</li>
+                        ${stats.database_knowledge !== undefined ? `<li><strong>Database Knowledge:</strong> ${stats.database_knowledge} items</li>` : ''}
+                        ${stats.database_conversations !== undefined ? `<li><strong>Database Conversations:</strong> ${stats.database_conversations}</li>` : ''}
+                        ${stats.web_scraping_enabled ? '<li><strong>Web Learning:</strong> ✓ Enabled</li>' : ''}
                         <li><strong>Last Updated:</strong> ${new Date(stats.last_updated).toLocaleString()}</li>
                     </ul>
                 </div>
@@ -341,6 +348,62 @@ class HitoriChat {
         } catch (error) {
             console.error('Error fetching stats:', error);
             this.showError('Could not load AI statistics');
+        }
+    }
+    
+    async trainFromWeb() {
+        try {
+            // Show confirmation dialog
+            const topics = prompt('Enter topics to learn about (comma-separated), or leave empty for general knowledge:', 
+                'artificial intelligence, technology, science');
+            
+            if (topics === null) return; // User cancelled
+            
+            const topicsArray = topics ? topics.split(',').map(t => t.trim()).filter(t => t) : [];
+            
+            // Show loading
+            this.showLoading(true);
+            this.trainBtn.disabled = true;
+            this.trainBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            const response = await fetch('/train', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    topics: topicsArray,
+                    max_sources: 5
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                const trainingMessage = `
+                    <div class="training-result">
+                        <h6><i class="fas fa-download me-2 text-success"></i>Web Training Complete!</h6>
+                        <ul class="list-unstyled mb-0">
+                            <li><strong>Sources Scraped:</strong> ${result.sources_scraped}</li>
+                            <li><strong>Knowledge Added:</strong> ${result.knowledge_items_added} items</li>
+                            <li><strong>Topics Learned:</strong> ${result.topics_learned}</li>
+                            ${result.errors && result.errors.length > 0 ? `<li class="text-warning"><strong>Errors:</strong> ${result.errors.length}</li>` : ''}
+                        </ul>
+                        <small class="text-muted">I'm now smarter and can answer more questions!</small>
+                    </div>
+                `;
+                
+                this.addMessage(trainingMessage, 'assistant', true);
+            } else {
+                this.showError(result.error || 'Training failed');
+            }
+        } catch (error) {
+            console.error('Error training:', error);
+            this.showError('Failed to start training. Please try again.');
+        } finally {
+            this.showLoading(false);
+            this.trainBtn.disabled = false;
+            this.trainBtn.innerHTML = '<i class="fas fa-download"></i>';
         }
     }
     

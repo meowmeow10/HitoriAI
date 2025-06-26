@@ -5,14 +5,37 @@ import re
 from datetime import datetime
 from collections import defaultdict, Counter
 import logging
+from sqlalchemy import create_engine, or_
+from sqlalchemy.orm import sessionmaker
+from models import Base, Knowledge, ConversationHistory, LearningPattern, WebSource, TopicKeyword
+from web_scraper import WebKnowledgeScraper
 
 class HitoriAI:
     """
     Hitori AI - A self-learning conversational AI assistant
-    Uses pattern matching, keyword analysis, and memory to provide intelligent responses
+    Uses pattern matching, keyword analysis, database storage, and web scraping
     """
     
-    def __init__(self, knowledge_file='hitori_knowledge.json'):
+    def __init__(self, knowledge_file='hitori_knowledge.json', database_url=None):
+        # Initialize database connection
+        self.database_url = database_url or os.environ.get('DATABASE_URL')
+        self.engine = None
+        self.Session = None
+        self.db_session = None
+        self.web_scraper = None
+        
+        if self.database_url:
+            try:
+                self.engine = create_engine(self.database_url)
+                Base.metadata.create_all(self.engine)
+                self.Session = sessionmaker(bind=self.engine)
+                self.db_session = self.Session()
+                self.web_scraper = WebKnowledgeScraper(self.db_session)
+                logging.info("Database connection established")
+            except Exception as e:
+                logging.error(f"Database connection failed: {e}")
+        
+        # Fallback to file-based storage
         self.knowledge_file = knowledge_file
         self.knowledge_base = self.load_knowledge()
         self.conversation_memory = []
@@ -147,11 +170,18 @@ class HitoriAI:
         self.context_keywords.extend(keywords)
         self.context_keywords = self.context_keywords[-20:]  # Keep last 20 keywords for context
         
-        # Find appropriate response
-        response = self.generate_response(message, keywords)
+        # Find appropriate response (use enhanced version if database available)
+        if self.db_session and keywords:
+            response = self.generate_enhanced_response(message, keywords)
+        else:
+            response = self.generate_response(message, keywords)
         
         # Learn from interaction
         self.learn_from_interaction(message, response, keywords)
+        
+        # Store in database if available
+        if self.db_session:
+            self.store_conversation_in_database(message, response, keywords, user_id)
         
         # Store AI response in memory
         self.conversation_memory.append({
@@ -291,12 +321,150 @@ class HitoriAI:
     
     def get_conversation_stats(self):
         """Get statistics about conversations"""
-        return {
+        stats = {
             "total_interactions": self.knowledge_base["user_interactions"],
             "topics_learned": len(self.knowledge_base["topic_knowledge"]),
             "patterns_learned": len(self.knowledge_base["learned_responses"]),
             "last_updated": self.knowledge_base["last_updated"]
         }
+        
+        # Add database stats if available
+        if self.db_session:
+            try:
+                db_knowledge_count = self.db_session.query(Knowledge).count()
+                db_conversations = self.db_session.query(ConversationHistory).count()
+                db_patterns = self.db_session.query(LearningPattern).count()
+                
+                stats.update({
+                    "database_knowledge": db_knowledge_count,
+                    "database_conversations": db_conversations,
+                    "database_patterns": db_patterns,
+                    "web_scraping_enabled": self.web_scraper is not None
+                })
+            except Exception as e:
+                logging.error(f"Error getting database stats: {e}")
+        
+        return stats
+    
+    def train_from_web(self, topics=None, max_sources=5):
+        """Train AI by scraping web sources for knowledge"""
+        if not self.web_scraper:
+            return {"error": "Web scraping not available - database not connected"}
+        
+        try:
+            # Get URLs based on topics
+            if topics:
+                urls = self.web_scraper.get_topic_suggestions(topics)
+            else:
+                urls = self.web_scraper.default_sources
+            
+            # Scrape web sources
+            results = self.web_scraper.scrape_multiple_sources(urls, max_sources)
+            
+            # Store knowledge in database
+            knowledge_added = 0
+            for topic, knowledge_items in results['knowledge_by_topic'].items():
+                for item in knowledge_items:
+                    # Check if knowledge already exists
+                    existing = self.db_session.query(Knowledge).filter_by(
+                        topic=item['topic'], 
+                        content=item['content']
+                    ).first()
+                    
+                    if not existing:
+                        knowledge = Knowledge(
+                            topic=item['topic'],
+                            content=item['content'],
+                            source=item['source'],
+                            confidence_score=item['confidence_score'],
+                            is_verified=False
+                        )
+                        self.db_session.add(knowledge)
+                        knowledge_added += 1
+            
+            self.db_session.commit()
+            
+            return {
+                "success": True,
+                "sources_scraped": results['successful_scrapes'],
+                "knowledge_items_added": knowledge_added,
+                "topics_learned": len(results['knowledge_by_topic']),
+                "errors": results['errors']
+            }
+            
+        except Exception as e:
+            logging.error(f"Error in web training: {e}")
+            return {"error": str(e)}
+    
+    def get_knowledge_from_database(self, keywords):
+        """Retrieve relevant knowledge from database"""
+        if not self.db_session:
+            return []
+        
+        try:
+            # Search for knowledge matching keywords
+            knowledge_items = []
+            for keyword in keywords[:3]:  # Limit to top 3 keywords
+                items = self.db_session.query(Knowledge).filter(
+                    or_(
+                        Knowledge.topic.ilike(f'%{keyword}%'),
+                        Knowledge.content.ilike(f'%{keyword}%')
+                    )
+                ).order_by(Knowledge.confidence_score.desc()).limit(3).all()
+                
+                knowledge_items.extend([{
+                    'topic': item.topic,
+                    'content': item.content,
+                    'confidence': item.confidence_score,
+                    'source': item.source
+                } for item in items])
+            
+            return knowledge_items
+            
+        except Exception as e:
+            logging.error(f"Error retrieving database knowledge: {e}")
+            return []
+    
+    def store_conversation_in_database(self, user_message, ai_response, keywords, session_id):
+        """Store conversation in database for learning"""
+        if not self.db_session:
+            return
+        
+        try:
+            conversation = ConversationHistory(
+                session_id=session_id,
+                user_message=user_message,
+                ai_response=ai_response,
+                keywords=json.dumps(keywords) if keywords else None
+            )
+            self.db_session.add(conversation)
+            self.db_session.commit()
+        except Exception as e:
+            logging.error(f"Error storing conversation: {e}")
+    
+    def generate_enhanced_response(self, message, keywords):
+        """Generate response using database knowledge"""
+        # Get relevant knowledge from database
+        db_knowledge = self.get_knowledge_from_database(keywords)
+        
+        if db_knowledge:
+            # Use database knowledge to enhance response
+            main_keyword = keywords[0] if keywords else "that topic"
+            
+            # Select best knowledge item
+            best_knowledge = max(db_knowledge, key=lambda x: x['confidence'])
+            
+            responses = [
+                f"I know about {main_keyword}! {best_knowledge['content']} What would you like to know more about?",
+                f"That's interesting about {main_keyword}. From what I've learned: {best_knowledge['content']} How does that relate to your question?",
+                f"I've been learning about {main_keyword}. {best_knowledge['content']} What's your experience with this?",
+                f"Based on my knowledge of {main_keyword}: {best_knowledge['content']} What aspect interests you most?"
+            ]
+            
+            return random.choice(responses)
+        
+        # Fallback to original response generation
+        return self.generate_response(message, keywords)
     
     def reset_knowledge(self):
         """Reset knowledge base (for testing or fresh start)"""
@@ -304,3 +472,13 @@ class HitoriAI:
         self.save_knowledge()
         self.conversation_memory = []
         self.context_keywords = []
+        
+        # Clear database if available
+        if self.db_session:
+            try:
+                self.db_session.query(Knowledge).delete()
+                self.db_session.query(ConversationHistory).delete()
+                self.db_session.query(LearningPattern).delete()
+                self.db_session.commit()
+            except Exception as e:
+                logging.error(f"Error clearing database: {e}")

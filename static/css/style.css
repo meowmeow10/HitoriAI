@@ -208,3 +208,32 @@ html, body {
 .stats-info ul li strong {
     color: var(--bs-info);
 }
+
+/* Training result styling */
+.training-result {
+    background: var(--bs-dark);
+    border: 1px solid var(--bs-success);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin: 0.5rem 0;
+}
+
+.training-result h6 {
+    color: var(--bs-success);
+    margin-bottom: 0.75rem;
+}
+
+.training-result ul li {
+    padding: 0.25rem 0;
+    color: var(--bs-body-color);
+}
+
+.training-result ul li strong {
+    color: var(--bs-success);
+}
+
+.training-result small {
+    display: block;
+    margin-top: 0.5rem;
+    font-style: italic;
+}
