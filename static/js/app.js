@@ -289,6 +289,7 @@ class HitoriChat {
                             <i class="fas fa-robot fa-3x mb-3 text-info"></i>
                             <h5>Hello! I'm Hitori, your AI assistant.</h5>
                             <p>You can type a message or use the microphone button to talk to me.</p>
+                            <p>If you want me to learn, press the Download button!
                         </div>
                     `;
                 } else {
