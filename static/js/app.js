@@ -356,7 +356,7 @@ class HitoriChat {
         try {
             // Show confirmation dialog
             const topics = prompt('Enter topics to learn about (comma-separated), or leave empty for general knowledge:', 
-                'artificial intelligence, technology, science');
+                'artificial intelligence, technology, science, cats');
             
             if (topics === null) return; // User cancelled
             

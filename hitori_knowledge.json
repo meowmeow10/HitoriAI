@@ -141,6 +141,54 @@
       "success_count": 0,
       "total_uses": 1,
       "intent": "greeting"
+    },
+    "general:i like camping": {
+      "responses": [
+        "That's interesting about camping! Popularity [edit]United States [edit]According to an infographic produced by Red Rover Camping and based on data from the 2014 American Camper Report published by the Coleman Company, Inc. What's your experience with this topic?"
+      ],
+      "success_count": 0,
+      "total_uses": 1,
+      "intent": "general"
+    },
+    "general:i like driving": {
+      "responses": [
+        "That's interesting about driving! Occasionally, philosophers entertain more metaphysically ambitious pictures, suggesting that a country is an organic entity with its own independent life and character, or that a country is an autonomous agent, just like you or me. What's your experience with this topic?"
+      ],
+      "success_count": 0,
+      "total_uses": 1,
+      "intent": "general"
+    },
+    "question:do you know what a car is?": {
+      "responses": [
+        "Based on what I've learned, Francis Bacon and Ren\u00e9 Descartes published philosophical arguments in favour of a new type of non-Aristotelian science. What else would you like to know about car?"
+      ],
+      "success_count": 0,
+      "total_uses": 1,
+      "intent": "question"
+    },
+    "greeting:starry, bocchi the rock!": {
+      "responses": [
+        "Bocchi the Rock! is absolutely fantastic! It tells the story of Hitori Gotoh, a socially anxious guitarist who joins a band. The series brilliantly portrays social anxiety while celebrating the power of music and friendship. What got you so interested in this?"
+      ],
+      "success_count": 0,
+      "total_uses": 1,
+      "intent": "greeting"
+    },
+    "greeting:i like bocchi the rock!": {
+      "responses": [
+        "Bocchi the Rock! is absolutely fantastic! It tells the story of Hitori Gotoh, a socially anxious guitarist who joins a band. The series brilliantly portrays social anxiety while celebrating the power of music and friendship. I love the enthusiasm!"
+      ],
+      "success_count": 0,
+      "total_uses": 1,
+      "intent": "greeting"
+    },
+    "enthusiasm:nokia is cool!": {
+      "responses": [
+        "That's interesting about cool! In the later 2000s, however, Nokia suffered from a series of poor management decisions and soon saw its share of the mobile phone market drop sharply. What's your experience with this topic?"
+      ],
+      "success_count": 0,
+      "total_uses": 1,
+      "intent": "enthusiasm"
     }
   },
   "topic_knowledge": {
@@ -615,12 +663,18 @@
       "response_effectiveness": []
     },
     "like": {
-      "mentions": 1,
+      "mentions": 4,
       "contexts": [
-        "sodium, with the symbol na and atomic number 11, is a soft, silvery-white, highly reactive alkali metal. it is essential for maintaining fluid balance, nerve and muscle function, and is the sixth most abundant element in the earth's crust. while it doesn't occur freely in nature, it is readily found in compounds like sodium chloride (table salt)."
+        "sodium, with the symbol na and atomic number 11, is a soft, silvery-white, highly reactive alkali metal. it is essential for maintaining fluid balance, nerve and muscle function, and is the sixth most abundant element in the earth's crust. while it doesn't occur freely in nature, it is readily found in compounds like sodium chloride (table salt).",
+        "i like camping",
+        "i like driving",
+        "i like bocchi the rock!"
       ],
       "facts": [],
       "sentiment_associations": [
+        "positive",
+        "positive",
+        "positive",
         "positive"
       ],
       "question_patterns": [],
@@ -801,8 +855,933 @@
       ],
       "question_patterns": [],
       "response_effectiveness": []
+    },
+    "camping": {
+      "mentions": 3,
+      "contexts": [
+        "camping",
+        "camping",
+        "i like camping"
+      ],
+      "facts": [],
+      "sentiment_associations": [
+        "neutral",
+        "neutral",
+        "positive"
+      ],
+      "question_patterns": [],
+      "response_effectiveness": []
+    },
+    "driving": {
+      "mentions": 1,
+      "contexts": [
+        "i like driving"
+      ],
+      "facts": [],
+      "sentiment_associations": [
+        "positive"
+      ],
+      "question_patterns": [],
+      "response_effectiveness": []
+    },
+    "car": {
+      "mentions": 1,
+      "contexts": [
+        "do you know what a car is?"
+      ],
+      "facts": [],
+      "sentiment_associations": [
+        "neutral"
+      ],
+      "question_patterns": [],
+      "response_effectiveness": []
+    },
+    "starry": {
+      "mentions": 1,
+      "contexts": [
+        "starry, bocchi the rock!"
+      ],
+      "facts": [],
+      "sentiment_associations": [
+        "neutral"
+      ],
+      "question_patterns": [],
+      "response_effectiveness": []
+    },
+    "bocchi": {
+      "mentions": 2,
+      "contexts": [
+        "starry, bocchi the rock!",
+        "i like bocchi the rock!"
+      ],
+      "facts": [],
+      "sentiment_associations": [
+        "neutral",
+        "positive"
+      ],
+      "question_patterns": [],
+      "response_effectiveness": []
+    },
+    "rock": {
+      "mentions": 2,
+      "contexts": [
+        "starry, bocchi the rock!",
+        "i like bocchi the rock!"
+      ],
+      "facts": [],
+      "sentiment_associations": [
+        "neutral",
+        "positive"
+      ],
+      "question_patterns": [],
+      "response_effectiveness": []
+    },
+    "nokia": {
+      "mentions": 3,
+      "contexts": [
+        "nokia",
+        "nokia 3310",
+        "nokia is cool!"
+      ],
+      "facts": [],
+      "sentiment_associations": [
+        "neutral",
+        "neutral",
+        "neutral"
+      ],
+      "question_patterns": [],
+      "response_effectiveness": []
+    },
+    "cool": {
+      "mentions": 1,
+      "contexts": [
+        "nokia is cool!"
+      ],
+      "facts": [],
+      "sentiment_associations": [
+        "neutral"
+      ],
+      "question_patterns": [],
+      "response_effectiveness": []
+    },
+    "name": {
+      "mentions": 1,
+      "contexts": [
+        "your name"
+      ],
+      "facts": [],
+      "sentiment_associations": [
+        "neutral"
+      ],
+      "question_patterns": [],
+      "response_effectiveness": []
+    },
+    "lua": {
+      "mentions": 1,
+      "contexts": [
+        "lua"
+      ],
+      "facts": [
+        "lua |\n| Website | lua |\n| Major implementations | |\n| Lua, LuaJIT, LuaVela, MoonSharp, | |\n| Dialects | |\n| GSL Shell, Luau | |\n| Influenced by | |\n| C++, CLU, Modula, Scheme, SNOBOL | |\n| Influenced | |\n| GameMonkey, Io, JavaScript[citation needed], Julia, Red, Ring,[2] Ruby,[citation needed] Squirrel, C--, Luau, |\nLua (/\u02c8lu\u02d0\u0259/ LOO-\u0259; from Portuguese: lua [\u02c8lu(w)\u0250] meaning moon) is a lightweight, high-level, multi-paradigm programming language designed mainly for embedded use in applications",
+        "[3] Lua is cross-platform software, since the interpreter of compiled bytecode is written in ANSI C,[4] and Lua has a relatively simple C application programming interface (API) to embed it into applications",
+        "[5]\nLua originated in 1993 as a language for extending software applications to meet the increasing demand for customization at the time",
+        "It provided the basic facilities of most procedural programming languages, but more complicated or domain-specific features were not included; rather, it included mechanisms for extending the language, allowing programmers to implement such features",
+        "As Lua was intended to be a general embeddable extension language, the designers of Lua focused on improving its speed, portability, extensibility and ease-of-use in development",
+        "History\n[edit]Lua was created in 1993 by Roberto Ierusalimschy, Luiz Henrique de Figueiredo and Waldemar Celes, members of the Computer Graphics Technology Group (Tecgraf) at the Pontifical Catholic University of Rio de Janeiro, in Brazil",
+        "[6]\nLua's predecessors were the data-description and configuration languages Simple Object Language (SOL) and Data-Entry Language (DEL)",
+        "Lua syntax for control structures was mostly borrowed from Modula (if\n, while\n, repeat\n/until\n), but also had taken influence from CLU (multiple assignments and multiple returns from function calls, as a simpler alternative to reference parameters or explicit pointers), C++ (\"neat idea of allowing a local variable to be declared only where we need it\"[6]), SNOBOL and AWK (associative arrays)",
+        "Dobb's Journal, Lua's creators also state that LISP and Scheme with their single, ubiquitous data-structure mechanism (the list) were a major influence on their decision to develop the table as the primary data structure of Lua",
+        "[8]\nLua semantics have been increasingly influenced by Scheme over time,[6] especially with the introduction of anonymous functions and full lexical scoping",
+        "Several features were added in new Lua versions",
+        "Versions of Lua prior to version 5",
+        "0 onwards, Lua has been licensed under the MIT License",
+        "Features\n[edit]Lua is commonly described as a \"multi-paradigm\" language, providing a small set of general features that can be extended to fit different problem types",
+        "Lua does not contain explicit support for inheritance, but allows it to be implemented with metatables",
+        "Similarly, Lua allows programmers to implement namespaces, classes and other related features using its single table implementation; first-class functions allow the employment of many techniques from functional programming and full lexical scoping allows fine-grained information hiding to enforce the principle of least privilege",
+        "In general, Lua strives to provide simple, flexible meta-features that can be extended as needed, rather than supply a feature-set specific to one programming paradigm",
+        "As a dynamically typed language intended for use as an extension language or scripting language, Lua is compact enough to fit on a variety of host platforms",
+        "Lua implements a small set of advanced features such as first-class functions, garbage collection, closures, proper tail calls, coercion (automatic conversion between string and number values at run time), coroutines (cooperative multitasking) and dynamic module loading",
+        "local students = 10\nA comment in Lua starts with a double-hyphen and runs to the end of the line, similar to Ada, Eiffel, Haskell, SQL and VHDL",
+        "The generic if then end\nstatement requires all three keywords:\nif condition then\n--statement body\nend\nAn example of an if\nstatement\nif x ~= 10 then\nprint(x)\nend\nThe else\nkeyword may be added with an accompanying statement block to control execution when the if\ncondition evaluates to false\n:\nif condition then\n--statement body\nelse\n--statement body\nend\nAn example of an if else\nstatement\nif x == 10 then\nprint(10)\nelse\nprint(x)\nend\nExecution may also be controlled according to multiple conditions using the elseif then\nkeywords:\nif condition then\n--statement body\nelseif condition then\n--statement body\nelse -- optional\n--optional default statement body\nend\nAn example of an if elseif else\nstatement\nif x == y then\nprint(\"x = y\")\nelseif x == z then\nprint(\"x = z\")\nelse -- optional\nprint(\"x does not equal any other variable\")\nend\nLua has four types of conditional loops: the while\nloop, the repeat\nloop (similar to a do while\nloop), the numeric for\nloop and the generic for\nloop",
+        "Lua also supports closures, as demonstrated below:\nfunction addto(x)\n-- Return a new function that adds x to the argument\nreturn function(y)\n--[[ When we refer to the variable x, which is outside the current\nscope and whose lifetime would be shorter than that of this anonymous\nfunction, Lua creates a closure",
+        "The closure is managed by Lua's garbage collector, just like any other object",
+        "Tables\n[edit]Tables are the most important data structures (and, by design, the only built-in composite data type) in Lua and are the foundation of all user-created types",
+        "A table is a set of key and data pairs, where the data is referenced by key; in other words, it is a hashed heterogeneous associative array",
+        "Because such use is very common, Lua features a special syntax for accessing such fields",
+        "Automatic indexing in Lua starts at 1",
+        "# is the length operator for tables and strings",
+        "array[0] = \"z\" -- Zero is a legal index",
+        "print(#array) -- Still prints 4, as Lua arrays are 1-based",
+        "y) -- Prints 40\nUsing a hash map to emulate an array is normally slower than using an actual array; however, Lua tables are optimized for use as arrays to help avoid this issue",
+        "setmetatable(fibs, {\n__index = function(values, n) --[[__index is a function predefined by Lua,\nit is called if key \"n\" does not exist"
+      ],
+      "sentiment_associations": [
+        "neutral"
+      ],
+      "question_patterns": [],
+      "response_effectiveness": []
+    },
+    "paradigm": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "Lua\n| Lua | |\n|---|---|\n| Paradigm | Multi-paradigm: scripting, imperative (procedural, prototype-based, object-oriented), functional, meta, reflective |\n| Designed by | Roberto Ierusalimschy Waldemar Celes Luiz Henrique de Figueiredo |\n| First appeared | 1993 |\n| Stable release | 5"
+      ],
+      "confidence": 0.9,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "first": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "Lua\n| Lua | |\n|---|---|\n| Paradigm | Multi-paradigm: scripting, imperative (procedural, prototype-based, object-oriented), functional, meta, reflective |\n| Designed by | Roberto Ierusalimschy Waldemar Celes Luiz Henrique de Figueiredo |\n| First appeared | 1993 |\n| Stable release | 5"
+      ],
+      "confidence": 0.9,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "gsl shell": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "lua |\n| Website | lua |\n| Major implementations | |\n| Lua, LuaJIT, LuaVela, MoonSharp, | |\n| Dialects | |\n| GSL Shell, Luau | |\n| Influenced by | |\n| C++, CLU, Modula, Scheme, SNOBOL | |\n| Influenced | |\n| GameMonkey, Io, JavaScript[citation needed], Julia, Red, Ring,[2] Ruby,[citation needed] Squirrel, C--, Luau, |\nLua (/\u02c8lu\u02d0\u0259/ LOO-\u0259; from Portuguese: lua [\u02c8lu(w)\u0250] meaning moon) is a lightweight, high-level, multi-paradigm programming language designed mainly for embedded use in applications"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "ansi c": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "[3] Lua is cross-platform software, since the interpreter of compiled bytecode is written in ANSI C,[4] and Lua has a relatively simple C application programming interface (API) to embed it into applications"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "software": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "[5]\nLua originated in 1993 as a language for extending software applications to meet the increasing demand for customization at the time",
+        "It is a field of research in computer science that develops and studies methods and software that enable machines to perceive their environment and use learning and intelligence to take actions that maximize their chances of achieving defined goals"
+      ],
+      "confidence": 0.9,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "programming": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "It provided the basic facilities of most procedural programming languages, but more complicated or domain-specific features were not included; rather, it included mechanisms for extending the language, allowing programmers to implement such features"
+      ],
+      "confidence": 0.5,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "as lua": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "As Lua was intended to be a general embeddable extension language, the designers of Lua focused on improving its speed, portability, extensibility and ease-of-use in development"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "tecgraf": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "History\n[edit]Lua was created in 1993 by Roberto Ierusalimschy, Luiz Henrique de Figueiredo and Waldemar Celes, members of the Computer Graphics Technology Group (Tecgraf) at the Pontifical Catholic University of Rio de Janeiro, in Brazil"
+      ],
+      "confidence": 0.9,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "data-entry language": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "[6]\nLua's predecessors were the data-description and configuration languages Simple Object Language (SOL) and Data-Entry Language (DEL)"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "in": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "In The Evolution of Lua, the language's authors wrote:[6]\nIn 1993, the only real contender was Tcl, which had been explicitly designed to be embedded into applications",
+        "In general, Lua strives to provide simple, flexible meta-features that can be extended as needed, rather than supply a feature-set specific to one programming paradigm"
+      ],
+      "confidence": 0.9,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "in the evolution": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "In The Evolution of Lua, the language's authors wrote:[6]\nIn 1993, the only real contender was Tcl, which had been explicitly designed to be embedded into applications"
+      ],
+      "confidence": 0.9,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "moon": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "0 was designed in such a way that its object constructors, being then slightly different from the current light and flexible style, incorporated the data-description syntax of SOL (hence the name Lua: Sol meaning \"Sun\" in Portuguese, and Lua meaning \"Moon\")"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "portuguese": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "0 was designed in such a way that its object constructors, being then slightly different from the current light and flexible style, incorporated the data-description syntax of SOL (hence the name Lua: Sol meaning \"Sun\" in Portuguese, and Lua meaning \"Moon\")"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "snobol": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "Lua syntax for control structures was mostly borrowed from Modula (if\n, while\n, repeat\n/until\n), but also had taken influence from CLU (multiple assignments and multiple returns from function calls, as a simpler alternative to reference parameters or explicit pointers), C++ (\"neat idea of allowing a local variable to be declared only where we need it\"[6]), SNOBOL and AWK (associative arrays)"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "journal": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "Dobb's Journal, Lua's creators also state that LISP and Scheme with their single, ubiquitous data-structure mechanism (the list) were a major influence on their decision to develop the table as the primary data structure of Lua"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "scheme": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "[8]\nLua semantics have been increasingly influenced by Scheme over time,[6] especially with the introduction of anonymous functions and full lexical scoping"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "several": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "Several features were added in new Lua versions"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "versions": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "Versions of Lua prior to version 5"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "mit license": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "0 onwards, Lua has been licensed under the MIT License"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "features": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "Features\n[edit]Lua is commonly described as a \"multi-paradigm\" language, providing a small set of general features that can be extended to fit different problem types"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "similarly": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "Similarly, Lua allows programmers to implement namespaces, classes and other related features using its single table implementation; first-class functions allow the employment of many techniques from functional programming and full lexical scoping allows fine-grained information hiding to enforce the principle of least privilege"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "as": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "As a dynamically typed language intended for use as an extension language or scripting language, Lua is compact enough to fit on a variety of host platforms",
+        "[20]\nRelationships to other fields\n[edit]Artificial intelligence\n[edit]As a scientific endeavour, machine learning grew out of the quest for artificial intelligence (AI)"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "data": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "Typical data structures such as arrays, sets, lists and records can be represented using Lua's single native data structure, the table, which is essentially a heterogeneous associative array",
+        "Tables\n[edit]Tables are the most important data structures (and, by design, the only built-in composite data type) in Lua and are the foundation of all user-created types",
+        "A table is a set of key and data pairs, where the data is referenced by key; in other words, it is a hashed heterogeneous associative array",
+        "Data mining is a related field of study, focusing on exploratory data analysis (EDA) via unsupervised learning",
+        "[13] Hebb's model of neurons interacting with one another set a groundwork for how AIs and machine learning algorithms work under nodes, or artificial neurons used by computers to communicate data",
+        "[24]\nData compression\n[edit]There is a close connection between machine learning and compression",
+        "[30]\nIn unsupervised machine learning, k-means clustering can be utilized to compress data by grouping similar data points into clusters",
+        "[33][34]Data mining\n[edit]Machine learning and data mining often employ the same methods and overlap significantly, but while machine learning focuses on prediction, based on known properties learned from the training data, data mining focuses on the discovery of (previously) unknown properties in the data (this is the analysis step of knowledge discovery in databases)",
+        "Data mining uses many machine learning methods, but with different goals; on the other hand, machine learning also employs data mining methods as \"unsupervised learning\" or as a preprocessing step to improve learner accuracy",
+        "In contrast, machine learning is not built on a pre-structured model; rather, the data shape the model by detecting underlying patterns",
+        "[5][43] Generalisation in this context is the ability of a learning machine to perform accurately on new, unseen examples/tasks after having experienced a learning data set"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "typical": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "Typical data structures such as arrays, sets, lists and records can be represented using Lua's single native data structure, the table, which is essentially a heterogeneous associative array"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "eiffel": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "local students = 10\nA comment in Lua starts with a double-hyphen and runs to the end of the line, similar to Ada, Eiffel, Haskell, SQL and VHDL"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "multi-line": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "-- Single line comment\n--[[\nMulti-line comment\n--]]\nThe factorial function is implemented in this example:\nfunction factorial(n)\nlocal x = 1\nfor i = 2, n do\nx = x * i\nend\nreturn x\nend\nControl flow\n[edit]Lua has one type of conditional test: if then end\nwith optional else\nand elseif then\nexecution control constructs"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "control": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "-- Single line comment\n--[[\nMulti-line comment\n--]]\nThe factorial function is implemented in this example:\nfunction factorial(n)\nlocal x = 1\nfor i = 2, n do\nx = x * i\nend\nreturn x\nend\nControl flow\n[edit]Lua has one type of conditional test: if then end\nwith optional else\nand elseif then\nexecution control constructs"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "execution": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "The generic if then end\nstatement requires all three keywords:\nif condition then\n--statement body\nend\nAn example of an if\nstatement\nif x ~= 10 then\nprint(x)\nend\nThe else\nkeyword may be added with an accompanying statement block to control execution when the if\ncondition evaluates to false\n:\nif condition then\n--statement body\nelse\n--statement body\nend\nAn example of an if else\nstatement\nif x == 10 then\nprint(10)\nelse\nprint(x)\nend\nExecution may also be controlled according to multiple conditions using the elseif then\nkeywords:\nif condition then\n--statement body\nelseif condition then\n--statement body\nelse -- optional\n--optional default statement body\nend\nAn example of an if elseif else\nstatement\nif x == y then\nprint(\"x = y\")\nelseif x == z then\nprint(\"x = z\")\nelse -- optional\nprint(\"x does not equal any other variable\")\nend\nLua has four types of conditional loops: the while\nloop, the repeat\nloop (similar to a do while\nloop), the numeric for\nloop and the generic for\nloop"
+      ],
+      "confidence": 1.0,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "functions": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "local grid = {\n{ 11, 12, 13 },\n{ 21, 22, 23 },\n{ 31, 32, 33 }\n}\nfor y, row in pairs(grid) do\nfor x, value in pairs(row) do\nprint(x, y, value)\nend\nend\nFunctions\n[edit]Lua's treatment of functions as first-class values is shown in the following example, where the print function's behavior is modified:\ndo\nlocal oldprint = print\n-- Store current print function as oldprint\nfunction print(s)\n--[[ Redefine print function"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "redefine": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "local grid = {\n{ 11, 12, 13 },\n{ 21, 22, 23 },\n{ 31, 32, 33 }\n}\nfor y, row in pairs(grid) do\nfor x, value in pairs(row) do\nprint(x, y, value)\nend\nend\nFunctions\n[edit]Lua's treatment of functions as first-class values is shown in the following example, where the print function's behavior is modified:\ndo\nlocal oldprint = print\n-- Store current print function as oldprint\nfunction print(s)\n--[[ Redefine print function"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "foo": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "]]\noldprint(s == \"foo\" and \"bar\" or s)\nend\nend\nAny future calls to print\nwill now be routed through the new function, and because of Lua's lexical scoping, the old print function will only be accessible by the new, modified print"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "bar": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "]]\noldprint(s == \"foo\" and \"bar\" or s)\nend\nend\nAny future calls to print\nwill now be routed through the new function, and because of Lua's lexical scoping, the old print function will only be accessible by the new, modified print"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "return": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "Lua also supports closures, as demonstrated below:\nfunction addto(x)\n-- Return a new function that adds x to the argument\nreturn function(y)\n--[[ When we refer to the variable x, which is outside the current\nscope and whose lifetime would be shorter than that of this anonymous\nfunction, Lua creates a closure"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "because": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "Because such use is very common, Lua features a special syntax for accessing such fields"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "automatic": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "Automatic indexing in Lua starts at 1"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "zero": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "array[0] = \"z\" -- Zero is a legal index"
+      ],
+      "confidence": 0.5,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "still": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "print(#array) -- Still prints 4, as Lua arrays are 1-based"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "prints": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "y) -- Prints 40\nUsing a hash map to emulate an array is normally slower than using an actual array; however, Lua tables are optimized for use as arrays to help avoid this issue"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "extensible": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "[13]\nMetatables\n[edit]Extensible semantics is a key feature of Lua, and the metatable concept allows powerful customization of tables"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "metatables": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "[13]\nMetatables\n[edit]Extensible semantics is a key feature of Lua, and the metatable concept allows powerful customization of tables"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Lua"
+    },
+    "series": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "Artificial intelligence\n| Part of a series on |\n| Artificial intelligence (AI) |\n|---|\nArtificial intelligence (AI) is the capability of computational systems to perform tasks typically associated with human intelligence, such as learning, reasoning, problem-solving, perception, and decision-making"
+      ],
+      "confidence": 1.0,
+      "source": "https://en.wikipedia.org/wiki/Artificial_intelligence"
+    },
+    "artificial": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "Artificial intelligence\n| Part of a series on |\n| Artificial intelligence (AI) |\n|---|\nArtificial intelligence (AI) is the capability of computational systems to perform tasks typically associated with human intelligence, such as learning, reasoning, problem-solving, perception, and decision-making",
+        "Artificial intelligence was founded as an academic discipline in 1956,[6] and the field went through multiple cycles of optimism throughout its history,[7][8] followed by periods of disappointment and loss of funding, known as AI winters"
+      ],
+      "confidence": 1.0,
+      "source": "https://en.wikipedia.org/wiki/Artificial_intelligence"
+    },
+    "artificial intelligence": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "It is a field of research in computer science that develops and studies methods and software that enable machines to perceive their environment and use learning and intelligence to take actions that maximize their chances of achieving defined goals",
+        "Artificial intelligence was founded as an academic discipline in 1956,[6] and the field went through multiple cycles of optimism throughout its history,[7][8] followed by periods of disappointment and loss of funding, known as AI winters",
+        "[16] Accurate and efficient reasoning is an unsolved problem",
+        "[22]\nA knowledge base is a body of knowledge represented in a form that can be used by a program",
+        "An ontology is the set of objects, relations, concepts, and properties used by a particular domain of knowledge",
+        "[40]\nLearning\nMachine learning is the study of programs that can improve their performance on a given task automatically",
+        "[47] Deep learning is a type of machine learning that runs inputs through biologically inspired artificial neural networks for all of these types of learning",
+        "[57]\nPerception\nMachine perception is the ability to use input from sensors (such as cameras, microphones, wireless signals, active lidar, sonar, radar, and tactile sensors) to deduce aspects of the world",
+        "Computer vision is the ability to analyze visual input",
+        "[63]\nSocial intelligence\nAffective computing is a field that comprises systems that recognize, interpret, process, or simulate human feeling, emotion, and mood",
+        "The result is a search that is too slow or never completes",
+        "[75]\nGradient descent is a type of local search that optimizes a set of numerical parameters by incrementally adjusting them to minimize a loss function",
+        "[79] Formal logic comes in two main forms: propositional logic (which operates on statements that are true or false and uses logical connectives such as \"and\", \"or\", \"not\" and \"implies\")[80] and predicate logic (which also operates on objects, predicates and relations and uses quantifiers such as \"Every X is a Y\" and \"There are some Xs that are Ys\")",
+        "[81]\nDeductive reasoning in logic is the process of proving a new statement (conclusion) from other statements that are given and assumed to be true (the premises)"
+      ],
+      "confidence": 0.7,
+      "source": "https://en.wikipedia.org/wiki/Artificial_intelligence"
+    },
+    "accurate": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "[16] Accurate and efficient reasoning is an unsolved problem"
+      ],
+      "confidence": 0.5,
+      "source": "https://en.wikipedia.org/wiki/Artificial_intelligence"
+    },
+    "an": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "An ontology is the set of objects, relations, concepts, and properties used by a particular domain of knowledge",
+        "[25][26][27]\nAn alternative view can show compression algorithms implicitly map strings into implicit feature space vectors, and compression-based similarity measures compute similarity within these feature spaces"
+      ],
+      "confidence": 0.5,
+      "source": "https://en.wikipedia.org/wiki/Artificial_intelligence"
+    },
+    "machine learning": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "[40]\nLearning\nMachine learning is the study of programs that can improve their performance on a given task automatically",
+        "[47] Deep learning is a type of machine learning that runs inputs through biologically inspired artificial neural networks for all of these types of learning",
+        "Machine learning\n| Part of a series on |\n| Machine learning and data mining |\n|---|\n| Part of a series on |\n| Artificial intelligence (AI) |\n|---|\nMachine learning (ML) is a field of study in artificial intelligence concerned with the development and study of statistical algorithms that can learn from data and generalise to unseen data, and thus perform tasks without explicit instructions",
+        "[1] Within a subdiscipline in machine learning, advances in the field of deep learning have allowed neural networks, a class of statistical algorithms, to surpass many previous machine learning approaches in performance",
+        "Statistics and mathematical optimisation (mathematical programming) methods comprise the foundations of machine learning",
+        "Data mining is a related field of study, focusing on exploratory data analysis (EDA) via unsupervised learning",
+        "[6][7]\nFrom a theoretical viewpoint, probably approximately correct learning provides a framework for describing machine learning",
+        "[10][11]\nThe earliest machine learning program was introduced in the 1950s when Arthur Samuel invented a computer program that calculated the winning chance in checkers for each side, but the history of machine learning roots back to decades of human desire and effort to study human cognitive processes",
+        "[13] Hebb's model of neurons interacting with one another set a groundwork for how AIs and machine learning algorithms work under nodes, or artificial neurons used by computers to communicate data",
+        "[12] Other researchers who have studied human cognitive systems contributed to the modern machine learning technologies as well, including logician Walter Pitts and Warren McCulloch, who proposed the early mathematical models of neural networks to come up with algorithms that mirror human thought processes",
+        "[14] A representative book on research into machine learning during the 1960s was Nilsson's book on Learning Machines, dealing mostly with machine learning for pattern classification",
+        "Mitchell provided a widely quoted, more formal definition of the algorithms studied in the machine learning field: \"A computer program is said to learn from experience E with respect to some class of tasks T and performance measure P if its performance at tasks in T, as measured by P, improves with experience E",
+        "\"[18] This definition of the tasks in which machine learning is concerned offers a fundamentally operational definition rather than defining the field in cognitive terms",
+        "[19]\nModern-day machine learning has two objectives",
+        "A machine learning algorithm for stock trading may inform the trader of future potential predictions",
+        "[20]\nRelationships to other fields\n[edit]Artificial intelligence\n[edit]As a scientific endeavour, machine learning grew out of the quest for artificial intelligence (AI)",
+        "[23]: 488\nHowever, an increasing emphasis on the logical, knowledge-based approach caused a rift between AI and machine learning",
+        "[23]: 25\nMachine learning (ML), reorganised and recognised as its own field, started to flourish in the 1990s",
+        "[24]\nData compression\n[edit]There is a close connection between machine learning and compression",
+        "[25][26][27]\nAn alternative view can show compression algorithms implicitly map strings into implicit feature space vectors, and compression-based similarity measures compute similarity within these feature spaces",
+        "An exhaustive examination of the feature spaces underlying all compression algorithms is precluded by space; instead, feature vectors chooses to examine three representative lossless compression methods, LZW, LZ77, and PPM",
+        "[28]\nAccording to AIXI theory, a connection more directly explained in Hutter Prize, the best possible compression of x is the smallest possible software that generates x",
+        "[30]\nIn unsupervised machine learning, k-means clustering can be utilized to compress data by grouping similar data points into clusters",
+        "K-means clustering, an unsupervised machine learning algorithm, is employed to partition a dataset into a specified number of clusters, k, each represented by the centroid of its points",
+        "[33][34]Data mining\n[edit]Machine learning and data mining often employ the same methods and overlap significantly, but while machine learning focuses on prediction, based on known properties learned from the training data, data mining focuses on the discovery of (previously) unknown properties in the data (this is the analysis step of knowledge discovery in databases)",
+        "Data mining uses many machine learning methods, but with different goals; on the other hand, machine learning also employs data mining methods as \"unsupervised learning\" or as a preprocessing step to improve learner accuracy",
+        "Machine learning also has intimate ties to optimisation: Many learning problems are formulated as minimisation of some loss function on a training set of examples",
+        "[35]\nGeneralization\n[edit]Characterizing the generalisation of various learning algorithms is an active topic of current research, especially for deep learning algorithms",
+        "Statistics\n[edit]Machine learning and statistics are closely related fields in terms of methods, but distinct in their principal goal: statistics draws population inferences from a sample, while machine learning finds generalisable predictive patterns",
+        "Jordan, the ideas of machine learning, from methodological principles to theoretical tools, have had a long pre-history in statistics",
+        "In contrast, machine learning is not built on a pre-structured model; rather, the data shape the model by detecting underlying patterns",
+        "Some statisticians have adopted methods from machine learning, leading to a combined field that they call statistical learning",
+        "[40]\nStatistical physics\n[edit]Analytical and computational techniques derived from deep-rooted physics of disordered systems can be extended to large-scale problems, including machine learning, e",
+        "[5][43] Generalisation in this context is the ability of a learning machine to perform accurately on new, unseen examples/tasks after having experienced a learning data set",
+        "The computational analysis of machine learning algorithms and their performance is a branch of theoretical computer science known as computational learning theory via the probably approximately correct learning model",
+        "Approaches\n[edit]\nMachine learning approaches are traditionally divided into three broad categories, which correspond to learning paradigms, depending on the nature of the \"signal\" or \"feedback\" available to the learning system:\n- Supervised learning: The computer is presented with example inputs and their desired outputs, given by a \"teacher\", and the goal is to learn a general rule that maps inputs to outputs"
+      ],
+      "confidence": 0.7,
+      "source": "https://en.wikipedia.org/wiki/Artificial_intelligence"
+    },
+    "perception\nmachine": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "[57]\nPerception\nMachine perception is the ability to use input from sensors (such as cameras, microphones, wireless signals, active lidar, sonar, radar, and tactile sensors) to deduce aspects of the world"
+      ],
+      "confidence": 0.5,
+      "source": "https://en.wikipedia.org/wiki/Artificial_intelligence"
+    },
+    "computer": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "Computer vision is the ability to analyze visual input",
+        "Mitchell provided a widely quoted, more formal definition of the algorithms studied in the machine learning field: \"A computer program is said to learn from experience E with respect to some class of tasks T and performance measure P if its performance at tasks in T, as measured by P, improves with experience E",
+        "The computational analysis of machine learning algorithms and their performance is a branch of theoretical computer science known as computational learning theory via the probably approximately correct learning model"
+      ],
+      "confidence": 0.5,
+      "source": "https://en.wikipedia.org/wiki/Artificial_intelligence"
+    },
+    "affective": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "[63]\nSocial intelligence\nAffective computing is a field that comprises systems that recognize, interpret, process, or simulate human feeling, emotion, and mood"
+      ],
+      "confidence": 0.5,
+      "source": "https://en.wikipedia.org/wiki/Artificial_intelligence"
+    },
+    "gradient": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "[75]\nGradient descent is a type of local search that optimizes a set of numerical parameters by incrementally adjusting them to minimize a loss function"
+      ],
+      "confidence": 0.5,
+      "source": "https://en.wikipedia.org/wiki/Artificial_intelligence"
+    },
+    "not": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "[79] Formal logic comes in two main forms: propositional logic (which operates on statements that are true or false and uses logical connectives such as \"and\", \"or\", \"not\" and \"implies\")[80] and predicate logic (which also operates on objects, predicates and relations and uses quantifiers such as \"Every X is a Y\" and \"There are some Xs that are Ys\")"
+      ],
+      "confidence": 0.5,
+      "source": "https://en.wikipedia.org/wiki/Artificial_intelligence"
+    },
+    "deductive": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "[81]\nDeductive reasoning in logic is the process of proving a new statement (conclusion) from other statements that are given and assumed to be true (the premises)"
+      ],
+      "confidence": 0.5,
+      "source": "https://en.wikipedia.org/wiki/Artificial_intelligence"
+    },
+    "ml": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "Machine learning\n| Part of a series on |\n| Machine learning and data mining |\n|---|\n| Part of a series on |\n| Artificial intelligence (AI) |\n|---|\nMachine learning (ML) is a field of study in artificial intelligence concerned with the development and study of statistical algorithms that can learn from data and generalise to unseen data, and thus perform tasks without explicit instructions",
+        "[23]: 25\nMachine learning (ML), reorganised and recognised as its own field, started to flourish in the 1990s"
+      ],
+      "confidence": 1.0,
+      "source": "https://en.wikipedia.org/wiki/Machine_learning"
+    },
+    "within": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "[1] Within a subdiscipline in machine learning, advances in the field of deep learning have allowed neural networks, a class of statistical algorithms, to surpass many previous machine learning approaches in performance"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Machine_learning"
+    },
+    "statistics": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "Statistics and mathematical optimisation (mathematical programming) methods comprise the foundations of machine learning",
+        "Statistics\n[edit]Machine learning and statistics are closely related fields in terms of methods, but distinct in their principal goal: statistics draws population inferences from a sample, while machine learning finds generalisable predictive patterns"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Machine_learning"
+    },
+    "from": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "[6][7]\nFrom a theoretical viewpoint, probably approximately correct learning provides a framework for describing machine learning"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Machine_learning"
+    },
+    "history": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "History\n[edit]The term machine learning was coined in 1959 by Arthur Samuel, an IBM employee and pioneer in the field of computer gaming and artificial intelligence"
+      ],
+      "confidence": 0.9,
+      "source": "https://en.wikipedia.org/wiki/Machine_learning"
+    },
+    "ibm": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "History\n[edit]The term machine learning was coined in 1959 by Arthur Samuel, an IBM employee and pioneer in the field of computer gaming and artificial intelligence"
+      ],
+      "confidence": 0.9,
+      "source": "https://en.wikipedia.org/wiki/Machine_learning"
+    },
+    "arthur samuel": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "[10][11]\nThe earliest machine learning program was introduced in the 1950s when Arthur Samuel invented a computer program that calculated the winning chance in checkers for each side, but the history of machine learning roots back to decades of human desire and effort to study human cognitive processes"
+      ],
+      "confidence": 1.0,
+      "source": "https://en.wikipedia.org/wiki/Machine_learning"
+    },
+    "walter pitts": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "[12] Other researchers who have studied human cognitive systems contributed to the modern machine learning technologies as well, including logician Walter Pitts and Warren McCulloch, who proposed the early mathematical models of neural networks to come up with algorithms that mirror human thought processes"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Machine_learning"
+    },
+    "nilsson": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "[14] A representative book on research into machine learning during the 1960s was Nilsson's book on Learning Machines, dealing mostly with machine learning for pattern classification"
+      ],
+      "confidence": 1.0,
+      "source": "https://en.wikipedia.org/wiki/Machine_learning"
+    },
+    "modern-day": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "[19]\nModern-day machine learning has two objectives"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Machine_learning"
+    },
+    "algorithm": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "A machine learning algorithm for stock trading may inform the trader of future potential predictions"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Machine_learning"
+    },
+    "however": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "[23]: 488\nHowever, an increasing emphasis on the logical, knowledge-based approach caused a rift between AI and machine learning"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Machine_learning"
+    },
+    "ppm": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "An exhaustive examination of the feature spaces underlying all compression algorithms is precluded by space; instead, feature vectors chooses to examine three representative lossless compression methods, LZW, LZ77, and PPM"
+      ],
+      "confidence": 0.5,
+      "source": "https://en.wikipedia.org/wiki/Machine_learning"
+    },
+    "hutter prize": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "[28]\nAccording to AIXI theory, a connection more directly explained in Hutter Prize, the best possible compression of x is the smallest possible software that generates x"
+      ],
+      "confidence": 0.7,
+      "source": "https://en.wikipedia.org/wiki/Machine_learning"
+    },
+    "k-means": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "K-means clustering, an unsupervised machine learning algorithm, is employed to partition a dataset into a specified number of clusters, k, each represented by the centroid of its points"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Machine_learning"
+    },
+    "ecml pkdd": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "Much of the confusion between these two research communities (which do often have separate conferences and separate journals, ECML PKDD being a major exception) comes from the basic assumptions they work with: in machine learning, performance is usually evaluated with respect to the ability to reproduce known knowledge, while in knowledge discovery and data mining (KDD) the key task is the discovery of previously unknown knowledge"
+      ],
+      "confidence": 1.0,
+      "source": "https://en.wikipedia.org/wiki/Machine_learning"
+    },
+    "kdd": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "Much of the confusion between these two research communities (which do often have separate conferences and separate journals, ECML PKDD being a major exception) comes from the basic assumptions they work with: in machine learning, performance is usually evaluated with respect to the ability to reproduce known knowledge, while in knowledge discovery and data mining (KDD) the key task is the discovery of previously unknown knowledge"
+      ],
+      "confidence": 1.0,
+      "source": "https://en.wikipedia.org/wiki/Machine_learning"
+    },
+    "many": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "Machine learning also has intimate ties to optimisation: Many learning problems are formulated as minimisation of some loss function on a training set of examples"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Machine_learning"
+    },
+    "characterizing": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "[35]\nGeneralization\n[edit]Characterizing the generalisation of various learning algorithms is an active topic of current research, especially for deep learning algorithms"
+      ],
+      "confidence": 0.7,
+      "source": "https://en.wikipedia.org/wiki/Machine_learning"
+    },
+    "jordan": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "Jordan, the ideas of machine learning, from methodological principles to theoretical tools, have had a long pre-history in statistics"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Machine_learning"
+    },
+    "random forest": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "[38]\nLeo Breiman distinguished two statistical modelling paradigms: data model and algorithmic model,[39] wherein \"algorithmic model\" means more or less the machine learning algorithms like Random Forest"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Machine_learning"
+    },
+    "algorithmic model": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "[38]\nLeo Breiman distinguished two statistical modelling paradigms: data model and algorithmic model,[39] wherein \"algorithmic model\" means more or less the machine learning algorithms like Random Forest"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Machine_learning"
+    },
+    "some": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "Some statisticians have adopted methods from machine learning, leading to a combined field that they call statistical learning"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Machine_learning"
+    },
+    "analytical": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "[40]\nStatistical physics\n[edit]Analytical and computational techniques derived from deep-rooted physics of disordered systems can be extended to large-scale problems, including machine learning, e"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Machine_learning"
+    },
+    "supervised": {
+      "mentions": 1,
+      "contexts": [],
+      "facts": [
+        "Approaches\n[edit]\nMachine learning approaches are traditionally divided into three broad categories, which correspond to learning paradigms, depending on the nature of the \"signal\" or \"feedback\" available to the learning system:\n- Supervised learning: The computer is presented with example inputs and their desired outputs, given by a \"teacher\", and the goal is to learn a general rule that maps inputs to outputs"
+      ],
+      "confidence": 0.8,
+      "source": "https://en.wikipedia.org/wiki/Machine_learning"
     }
   },
-  "user_interactions": 20,
+  "user_interactions": 32,
   "last_updated": "2025-06-27T08:28:37.320941"
 }
